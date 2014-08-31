@@ -3631,6 +3631,345 @@ public function allocation($zone = NULL, $county = NULL, $district = NULL, $faci
     }
 
 
+    //////Administration stuff
+
+    public function insert_percentage_tables(){
+        $month = date('mY',time());        
+        $this->get_county_percentages_month($month);
+        $this->get_district_percentages_month($month);
+    }
+
+    public function update_percentage_tables($month=null){
+        if(isset($month)){           
+            $year = substr($month, -4);
+            $month = substr($month, 0,2);            
+            $monthyear = $month.$year;
+        }else{
+            $month = date('mY',time());        
+        }
+        $this->get_county_percentages_month($month);
+        $this->get_district_percentages_month($month);
+    }
+    function get_county_percentages_month($month=null){
+    if(isset($month)){           
+        $year = substr($month, -4);
+        $month = substr($month, 0,2);            
+        $monthyear = $month.$year;                    
+
+    }
+    $sql = "select id from counties";
+    $result = $this->db->query($sql)->result_array();
+     foreach ($result as $key => $value) {
+        $id = $value['id'];               
+        $sql = "select 
+        count(facilities.facility_code) as facilities
+        from
+        facilities,
+        districts,
+        counties
+        where
+        facilities.district = districts.id
+        and districts.county = counties.id
+        and counties.id = $i
+        and facilities.rtk_enabled = 1";
+        $facilities = $this->db->query($sql)->result_array();            
+        foreach ($facilities as $key => $value) {
+            $facility_count = $value['facilities'];
+        }
+        $percentage = $this->rtk_summary_county($i,$year,$month);
+        $reported = $percentage['reported']; 
+        $q = "insert into rtk_county_percentage (county_id, facilities,reported,month) values ($i,$facility_count,$reported,'$monthyear')";
+        $this->db->query($q);
+    }
+}
+function get_district_percentages_month($month=null){
+    if(isset($month)){           
+        $year = substr($month, -4);
+        $month = substr($month, 0,2);            
+        $monthyear = $month.$year;                    
+
+    }
+    $sql = "select id from districts";
+    $result = $this->db->query($sql)->result_array();
+    foreach ($result as $key => $value) {
+        $id = $value['id'];
+        $q = "select 
+        count(facilities.facility_code) as facilities
+        from
+        facilities
+        where
+        facilities.district = $id
+        and facilities.rtk_enabled = 1";               
+        $facilities = $this->db->query($q)->result_array();
+        foreach ($facilities as $key => $value) {
+            $facility_count = $value['facilities'];
+        }            
+        $percentage = $this->rtk_summary_district($id, $year, $month);
+        $reported = $percentage['reported']; 
+        $q = "insert into rtk_district_percentage (district_id, facilities,reported,month) values ($id,$facility_count,$reported,'$monthyear')";
+        $this->db->query($q);
+
+    }             
+
+    
+}
+
+
+public function kemsa_district_reports($district) {
+    $pdf_htm = '';
+    $month = date('mY', strtotime('-1 month', time()));
+    $year = substr($month, -4);
+    $month = date('m', strtotime('-1 month', time()));
+    $date = date('F-Y', mktime(0, 0, 0, $month, 1, $year));
+    $q = 'SELECT * FROM  `districts` WHERE  `id` =' . $district;
+    $res = $this->db->query($q);
+    $resval = $res->result_array();
+    $reportname = $resval['0']['district'] . ' district FCDRR-RTK Reports for ' . $date;
+    $reports_html = "<h2>" . $reportname . "</h2><hr> ";        
+
+    $reports_html .= $this->district_reports($year, $month, $district);
+        //       echo($reports_html);die;
+//      $email_address = "cecilia.wanjala@kemsa.co.ke,jbatuka@usaid.gov";
+//        $email_address = "lab@kemsa.co.ke,shamim.kuppuswamy@kemsa.co.ke,onjathi@clintonhealthaccess.org,jbatuka@usaid.gov,williamnguru@gmail.com,ttunduny@gmail.com";
+      // $email_address = "lab@kemsa.co.ke,williamnguru@gmail.com,ttunduny@gmail.com";
+    $email_address = "ttunduny@gmail.com";
+    $this->sendmail($reports_html, $reportname, $email_address);
+}
+
+public function district_reports($year, $month, $district) {
+    $pdf_htm = '';
+    $first_day_current_month = $year . '-' . $month . '-1';
+    $firstdate = $year . '-' . $month . '-01';
+    $month = date("m", strtotime("$firstdate"));
+    $year = date("Y", strtotime("$firstdate"));
+    $num_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+    $lastdate = $year . '-' . $month . '-' . $num_days;
+    $firstdate = $year . '-' . $month . '-01';
+
+    $thismonth = date('Y-m', time());
+    $thismonth .="-1";
+
+
+    $q = "SELECT DISTINCT lab_commodity_orders.facility_code, lab_commodity_orders.id,lab_commodity_orders.order_date
+    FROM lab_commodity_orders, districts, counties
+    WHERE districts.id = lab_commodity_orders.district_id
+    AND districts.county = counties.id
+    AND districts.id = $district
+    AND lab_commodity_orders.order_date
+    BETWEEN '$firstdate'
+    AND NOW()";
+//        echo $q;die;
+    $res = $this->db->query($q);
+    foreach ($res->result_array() as $key => $value) {
+        $id = $value['id'];
+        $pdf_htm .= $this->generate_lastpdf($id);
+        $pdf_htm .= '<br /><br /><br /><hr/><br /><br />';
+    }
+    return $pdf_htm;
+}
+
+function generate_lastpdf($id) {
+    $query = $this->db->query('SELECT id
+        FROM  `lab_commodity_orders` 
+        where `id` = ' . $id . '
+        LIMIT 0 , 1');
+    foreach ($query->result_array() as $row) {
+        $order_no = $row['id'];
+    }
+    $query1 = $this->db->query('SELECT * 
+        FROM lab_commodity_orders, facilities, districts,counties
+        WHERE lab_commodity_orders.district_id = districts.id
+        AND counties.id = districts.county
+        AND facilities.facility_code = lab_commodity_orders.facility_code
+        AND lab_commodity_orders.id =' . $order_no . '');
+    $lab_order = $query1->result_array();
+
+    date_default_timezone_set("EUROPE/Moscow");
+    $firstday = date('D dS M Y', strtotime("first day of previous month"));
+    $lastday = date('D dS M Y', strtotime("last day of previous month"));
+    $lastmonth = date('F', strtotime("last day of previous month"));
+    $end_date = date('dS F Y', strtotime($lab_order[0]['end_date']));
+    $beg_date = date('dS F Y', strtotime($lab_order[0]['beg_date']));
+
+    $orderdate = $lab_order[0]['order_date'];
+    $month = date('F', strtotime($orderdate));
+    $html_title = "<div ALIGN=CENTER><img src='" . base_url() . "Images/coat_of_arms.png' height='70' width='70'style='vertical-align: top;' > </img></div>
+    <div style='text-align:center; font-size: 14px;display: block;font-weight: bold;'>RTK FCDRR Report for " . $lab_order[0]['facility_name'] . "  $month  2014</div>
+    <div style='text-align:center; font-family: arial,helvetica,clean,sans-serif;display: block; font-weight: bold; font-size: 14px;'>
+     Ministry of Health</div>
+     <div style='text-align:center; font-family: arial,helvetica,clean,sans-serif;display: block; font-weight: bold;display: block; font-size: 13px;'>Health Commodities Management Platform</div><hr />
+     <style>table.data-table {border: 1px solid #DDD;font-size: 13px;border-spacing: 0px;}
+        table.data-table th {border: none;color: #036;text-align: center;background-color: #F5F5F5;border: 1px solid #DDD;border-top: none;max-width: 450px;}
+        table.data-table td, table th {padding: 4px;}
+        table.data-table td {border: none;border-right: 1px solid #DDD;height: 30px;margin: 0px;border-bottom: 1px solid #DDD;}
+        .col5{background:#D8D8D8;}</style>";
+        $table_head = '
+        <table border="0" class="data-table" style="width: 100%; margin: 10px auto;">
+            <tr>
+                <td>Name of Facility:</td>
+                <td colspan="2">' . $lab_order[0]['facility_name'] . '</td>
+                <td colspan="3">Applicable to HIV Test Kits Only</td>
+                <td colspan="4" style="text-align:center">Applicable to Malaria Testing Only</td>                  
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:left">MFL Code:</td>
+                <td>' . $lab_order[0]['facility_code'] . '</td>
+                <td colspan="2" style="text-align:center">Type of Service</td>
+                <td colspan="1" style="text-align:center">No. of Tests Done</td>
+                <td colspan="1">Test</td>
+                <td colspan="1">Category</td>
+                <td colspan="1">No. of Tests Performed</td>
+                <td colspan="1">No. Positive</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:left">District:</td>
+                <td>' . $lab_order[0]['district'] . '</td>
+                <td colspan="2">VCT</td>
+                <td>' . $lab_order[0]['vct'] . '</td>
+                <td rowspan="3">RDT</td>
+                <td style="text-align:left">Patients&nbsp;<u>under</u> 5&nbsp;years</td>
+                <td>' . $lab_order[0]['rdt_under_tests'] . '</td>
+                <td>' . $lab_order[0]['rdt_under_pos'] . '</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:left">County:</td>                     
+                <td>' . $lab_order[0]['county'] . '</td>
+                <td colspan="2">PITC</td>
+                <td>' . $lab_order[0]['pitc'] . '</td>
+                <td style="text-align:left">Patients&nbsp;aged 5-14&nbsp;yrs</td>
+                <td>' . $lab_order[0]['rdt_btwn_tests'] . '</td>
+                <td>' . $lab_order[0]['rdt_btwn_pos'] . '</td>
+            </tr>
+            <tr><td colspan="2" style="text-align:right">Beginning:</td> 
+                <td>' . $beg_date . '</td>
+                <td colspan="2">PMTCT</td>
+                <td>' . $lab_order[0]['pmtct'] . '</td>
+                <td style="text-align:left">Patients&nbsp;<u>over</u> 14&nbsp;years</td>
+                <td>' . $lab_order[0]['rdt_over_tests'] . '</td>
+                <td>' . $lab_order[0]['rdt_over_pos'] . '</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:right">Ending:</td>
+                <td>' . $end_date . '</td>
+                <td colspan="2">Blood&nbsp;Screening</td>
+                <td>' . $lab_order[0]['b_screening'] . '</td>
+                <td rowspan="3">Microscopy</td>
+                <td style="text-align:left">Patients&nbsp;<u>under</u> 5&nbsp;years</td>
+                <td>' . $lab_order[0]['micro_under_tests'] . '</td>
+                <td>' . $lab_order[0]['micro_under_pos'] . '</td>                          
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2">Other&nbsp;(Please&nbsp;Specify)</td>
+                <td>' . $lab_order[0]['other'] . '</td> 
+                <td style="text-align:left">Patients&nbsp;aged 5-14&nbsp;yrs</td>
+                <td>' . $lab_order[0]['micro_btwn_tests'] . '</td>
+                <td>' . $lab_order[0]['micro_btwn_pos'] . '</td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2">Specify&nbsp;Here:</td>
+                <td>' . $lab_order[0]['specification'] . '</td>   
+                <td style="text-align:left">Patients&nbsp;<u>over</u> 14&nbsp;years</td>
+                <td>' . $lab_order[0]['micro_over_tests'] . '</td>
+                <td>' . $lab_order[0]['micro_over_pos'] . '</td>
+            </tr></table>';
+            $table_head .= '<style>table.data-table {border: 1px solid #DDD;margin: 10px auto;border-spacing: 0px;}
+            table.data-table th {border: none;color: #036;text-align: center;background-color: #F5F5F5;border: 1px solid #DDD;border-top: none;max-width: 450px;}
+            table.data-table td, table th {padding: 4px;}
+            table.data-table td {border: none;border-left: 1px solid #DDD;border-right: 1px solid #DDD;height: 20px;margin: 0px;border-bottom: 1px solid #DDD;}
+            .col5{background:#D8D8D8;}</style></table>
+            <table class="data-table" width="100%">
+                <thead>
+                    <tr>
+                        <th rowspan="2"><strong>Commodity</strong></th>
+                        <th rowspan="2"><strong>Unit of Issue</strong></th>
+                        <th rowspan="2"><strong>Beginning Balance</strong></th>
+                        <th rowspan="2"><strong>Quantity Received</strong></th>
+                        <th rowspan="2"><strong>Quantity Used</strong></th>
+                        <th rowspan="2"><strong>Tests Done</strong></th>
+                        <th rowspan="2"><strong>Losses</strong></th>
+                        <th colspan="2"><strong>Adjustments</strong></th>
+                        <th rowspan="2"><strong>Closing Stock</strong></th>
+                        <th rowspan="2"><strong>Qty Expiring <br />in 6 Months</strong></th>
+                        <th rowspan="2"><strong>Days Out of <br />Stock</strong></th>
+                        <th rowspan="2"><strong>Qty Requested</strong></th>
+                    </tr>
+                    <tr>
+                        <th><strong>Positive</strong></th>
+                        <th><strong>Negative</strong></th>
+                    </tr>
+                </thead>
+                <tbody>';
+                    $detail_list = Lab_Commodity_Details::get_order($order_no);
+                    $table_body = '';
+                    foreach ($detail_list as $detail) {
+                        $table_body .= '<tr><td>' . $detail['commodity_name'] . '</td>';
+                        $table_body .= '<td>' . $detail['unit_of_issue'] . '</td>';
+                        $table_body .= '<td>' . $detail['beginning_bal'] . '</td>';
+                        $table_body .= '<td>' . $detail['q_received'] . '</td>';
+                        $table_body .= '<td>' . $detail['q_used'] . '</td>';
+                        $table_body .= '<td>' . $detail['no_of_tests_done'] . '</td>';
+                        $table_body .= '<td>' . $detail['losses'] . '</td>';
+                        $table_body .= '<td>' . $detail['positive_adj'] . '</td>';
+                        $table_body .= '<td>' . $detail['negative_adj'] . '</td>';
+                        $table_body .= '<td>' . $detail['closing_stock'] . '</td>';
+                        $table_body .= '<td>' . $detail['q_expiring'] . '</td>';
+                        $table_body .= '<td>' . $detail['days_out_of_stock'] . '</td>';
+                        $table_body .= '<td>' . $detail['q_requested'] . '</td></tr>';
+                    }
+                    $table_foot = '</tbody></table>';
+
+                    $table_foot .= '
+                    <table border="0" style="width: 100%;border: 1px solid #DDD;">
+                        <tr>
+                            <td style="text-align:left">Explaination of Losses and Adjustments</td><td  style="width: 57%;">' . $lab_order[0]['explanation'] . '</td>
+                        </tr>
+                        <tr style="background: #ECE8FD;">
+                            <td>(1) Daily Activity Register for Laboratory Reagents and Consumables (MOH 642):</td><td>' . $lab_order[0]['moh_642'] . '</td>
+                        </tr>
+                        <tr>
+                            <td  >(2) F-CDRR for Laboratory Commodities (MOH 643):</b></td><td>' . $lab_order[0]['moh_643'] . '</td>
+                        </tr>
+                        <tr style="background: #ECE8FD;">                   
+                            <td style="text-align:left">Compiled by: </td><td>' . $lab_order[0]['compiled_by'] . '</td>
+                        </tr> 
+                    </table>';
+                    $report_name = "Lab Commodities Order " . $order_no . " Details";
+                    $title = "Lab Commodities Order " . $order_no . " Details";
+                    $html_data = $html_title . $table_head . $table_body . $table_foot;
+
+                    $filename = "RTK FCDRR Report for " . $lab_order[0]['facility_name'] . "  $lastmonth  2014";
+                    return $html_data;
+                }
+
+public function sendmail($output, $reportname, $email_address) {
+    $this->load->helper('file');
+    include 'rtk_mailer.php';
+    $newmail = new rtk_mailer();
+    $this->load->library('mpdf');
+    $mpdf = new mPDF('', 'A4-L', 0, '', 15, 15, 16, 16, 9, 5, 'L');
+    $mpdf->WriteHTML($output);
+    $emailAttachment = $mpdf->Output($reportname . '.pdf', 'S');
+    $attach_file = './pdf/' . $reportname . '.pdf';
+    if (!write_file('./pdf/' . $reportname . '.pdf', $mpdf->Output('report_name.pdf', 'S'))) {
+        $this->session->set_flashdata('system_error_message', 'An error occured');
+    } else {
+        $subject = '' . $reportname;
+
+        $attach_file = './pdf/' . $reportname . '.pdf';
+        $bcc_email = 'tngugi@clintonhealthaccess.org';
+        $message = $output;
+        $response = $newmail->send_email($email_address, $message, $subject, $attach_file, $bcc_email);
+            // $response= $newmail->send_email(substr($email_address,0,-1),$message,$subject,$attach_file,$bcc_email);
+        if ($response) {
+            delete_files('./pdf/' . $reportname . '.pdf');
+        }
+    }
+}
+
+
+
 
 }
 ?>
