@@ -202,7 +202,7 @@ $(document).ready(function(){
                         <?php 
                         $count = count($stock_status);
                         for ($i=0; $i<$count; $i++){
-                            /*foreach ($stock_status[$i] as $key => $value) { ?>
+                            foreach ($stock_status as $key => $value) { ?>
                             <tr>
                                 <td><?php echo $value['county']; ?></td>
                                 <td><?php echo $value['district']; ?></td>
@@ -218,7 +218,7 @@ $(document).ready(function(){
                                 <td><?php echo $value['sum_expiring']; ?></td>
                                 <td><?php echo $value['sum_allocated']; ?></td>
                             </tr>
-                            <?php }*/ }?>
+                            <?php } }?>
                         </tbody>
                     </table>
                 </div>

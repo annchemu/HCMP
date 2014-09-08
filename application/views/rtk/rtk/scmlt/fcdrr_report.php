@@ -46,9 +46,7 @@ $(function() {
     });
 
 
-    $('#save1')
-    .button()
-    .click(function() {
+    $('#save1').click(function() {
 
         $('#myform').submit();
     });
