@@ -259,7 +259,7 @@ $district_name = Districts::get_district_name($district)->toArray();
         });
          $('#orders_table').dataTable({
             "sDom": "T lfrtip",
-            "aaSorting": [[0, "desc"]],
+            "aaSorting": [[0, 'desc']],
             "bPaginate": false,            
             "sScrollY": "377px",
             "sScrollX": "100%",

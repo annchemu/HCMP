@@ -103,31 +103,23 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Determine</td>
-                                        <td><?php echo $district_balances_current[0]['sum_opening']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_received']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_used']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_tests']; ?></td>
+                                <tr>
+                                <?php 
+                                foreach ($district_balances_current as $key => $value) {?>
+                                        <td><?php echo $value['commodity_name'];?></td>
+                                        <td><?php echo $value['sum_opening']; ?></td>
+                                        <td><?php echo $value['sum_received']; ?></td>
+                                        <td><?php echo $value['sum_used']; ?></td>
+                                        <td><?php echo $value['sum_tests']; ?></td>
+                                        <td><?php echo $value['sum_losses']; ?></td>
+                                        <td><?php echo $value['sum_closing_bal']; ?></td>
+                                        <td><?php echo $value['sum_requested']; ?></td>
+                                        <td><?php echo $value['sum_expiring']; ?></td>
+                                        <td><?php echo $value['sum_days']; ?></td>
+                                <?php }
 
-                                        <td><?php echo $district_balances_current[0]['sum_losses']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_closing_bal']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_requested']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_expiring']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_days']; ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Unigold</td>
-                                        <td><?php echo $district_balances_current[1]['sum_opening']; ?></td>
-                                        <td><?php echo $district_balances_current[1]['sum_received']; ?></td>
-                                        <td><?php echo $district_balances_current[1]['sum_used']; ?></td>
-                                        <td><?php echo $district_balances_current[1]['sum_tests']; ?></td>
-
-                                        <td><?php echo $district_balances_current[1]['sum_losses']; ?></td>
-                                        <td><?php echo $district_balances_current[1]['sum_closing_bal']; ?></td>
-                                        <td><?php echo $district_balances_current[1]['sum_requested']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_expiring']; ?></td>
-                                        <td><?php echo $district_balances_current[0]['sum_days']; ?></td>
+                                ?>
+                                    
                                     </tr>
                                 </tbody>
                             </table>

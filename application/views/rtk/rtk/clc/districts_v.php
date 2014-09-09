@@ -102,6 +102,7 @@ foreach ($res->result_array() as $key => $value) {
                 <thead>
                     <th>Sub-County</th>
                     <th>No of Facilities</th>
+                    <th>Action</th>
                 </thead>
                 <tbody>
                 <?php  
@@ -112,8 +113,9 @@ foreach ($res->result_array() as $key => $value) {
                         $action = base_url() . 'rtk_management/district_profile/' . $district;
                      ?> 
                         <tr>
-                            <td><?php echo $districts_list[$i]['district'];?>&nbsp;<a href="<?php echo $action;?>">View </a></td>
+                            <td><?php echo $districts_list[$i]['district'];?></td>
                             <td><?php echo $facilities_count[$i];?></td>
+                            <td><a href="<?php echo $action;?>">View </a></td>
                         </tr>
                     <?php } ?>
                 </tbody>
