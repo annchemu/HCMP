@@ -967,7 +967,8 @@ public function rtk_manager($month=null) {
     $County = $this->session->userdata('county_name');
     $data['county'] = $County;
     $Countyid = $this->session->userdata('county_id');
-    $data['user_logs'] = $this->rtk_logs();
+    //$data['user_logs'] = $this->rtk_logs();
+
     $data['active_month'] = $month.$year;
     $data['content_view'] = "rtk/rtk/admin/admin_home";
     $data['banner_text'] = "RTK Manager";
@@ -1023,6 +1024,260 @@ public function rtk_manager_settings() {
             $data['users'] = $users;
             $this->load->view('rtk/template', $data);
         }
+
+        public function rtk_manager_messages() {
+
+            $data['title'] = 'RTK Manager Messages';
+            $data['banner_text'] = 'RTK Manager';        
+            $data['content_view'] = "rtk/rtk/admin/admin_messages";        
+            $this->load->view('rtk/template', $data);
+        }
+
+        public function rtk_send_message() {
+            $receipient_id = mysql_real_escape_string($_POST['id']);
+            $subject = mysql_real_escape_string($_POST['subject']);
+            $message = mysql_real_escape_string($_POST['message']);        
+            $attach_file = null;
+            $bcc_email = null;
+            $receipient = array();
+            $month = date('mY');       
+            if($receipient_id==1){
+            //all users
+                $sql = "SELECT email FROM user WHERE usertype_id in (0,7,8,11,13) and status=1 ORDER BY id DESC";
+                $res = $this->db->query($sql)->result_array();                  
+                $to =array();
+                foreach ($res as  $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }    
+            }elseif($receipient_id==2){
+            //All SCMLTs
+                $sql = "SELECT email FROM user WHERE usertype_id = 7 and status = 1 ORDER BY id DESC";
+                $res = $this->db->query($sql)->result_array();                  
+                $to =array();
+                foreach ($res as  $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }             
+
+            }elseif($receipient_id==3){
+            //All CLCs
+                $sql = "SELECT email FROM user WHERE usertype_id =13 and status =1 ORDER BY id DESC";
+                $res = $this->db->query($sql)->result_array();                  
+                $to =array();
+                foreach ($res as  $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }          
+
+            }elseif($receipient_id==4){
+            //Sub C with more than 75% reporting
+                $sql = "select distinct district_id from  rtk_district_percentage  where  month = '$month' and percentage > 75";
+                $districts = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($districts as $value) {
+                    $dist = $value['district_id'];
+                    $q = "select email from user where district = $dist and usertype_id=7 and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }              
+
+            }elseif($receipient_id==5){
+            //Sub C with less than 75% reporting            
+                $sql = "select distinct district_id from  rtk_district_percentage  where  month = '$month' and percentage < 75";
+                $districts = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($districts as $value) {
+                    $dist = $value['district_id'];
+                    $q = "select email from user where district = $dist and usertype_id=7 and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }      
+            }elseif($receipient_id==6){
+            //Sub C with less than 50% reporting   
+                $sql = "select distinct district_id from  rtk_district_percentage  where  month = '$month' and percentage  > 50";
+                $districts = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($districts as $value) {
+                    $dist = $value['district_id'];
+                    $q = "select email from user where district = $dist and usertype_id=7 and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }               
+
+            }elseif($receipient_id==7){
+            //Sub C with less than 25% reporting   
+                $sql = "select distinct district_id from  rtk_district_percentage  where  month = '$month' and percentage > 25";
+                $districts = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($districts as $value) {
+                    $dist = $value['district_id'];
+                    $q = "select email from user where district = $dist and usertype_id=7 and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }               
+
+            }elseif($receipient_id==8){
+            //C with more than 75% reporting   
+                $sql = "select distinct county_id from  rtk_county_percentage  where  month = '$month' and percentage  >75";
+                $counties = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($counties as $value) {
+                    $county = $value['county_id'];
+                    $q = "select email from user where countyid = 'county' and usertype_id='13' and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }                
+
+            }elseif($receipient_id==9){
+            //C with less than 75% reporting
+                $sql = "select distinct county_id from  rtk_county_percentage  where  month = '$month' and percentage <75";
+                $counties = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($counties as $value) {
+                    $county = $value['county_id'];
+                    $q = "select email from user where countyid = 'county' and usertype_id='13' and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }               
+            }elseif($receipient_id==10){
+            //C with less than 50% reporting 
+                $sql = "select distinct county_id from  rtk_county_percentage  where  month = '$month' and percentage  <50";
+                $counties = $this->db->query($sql)->result_array();
+                $emails = array();
+                foreach ($counties as $value) {
+                    $county = $value['county_id'];
+                    $q = "select email from user where countyid = 'county' and usertype_id='13' and status = 1 order by id desc";
+                    $res = $this->db->query($q)->result_array();      
+                    array_push($emails, $res);
+                }       
+                foreach ($emails AS $key => $value) {
+                    $new_emails[] = $value[0];
+                }
+                $to = array();
+                foreach ($new_emails as $key => $value) {
+                    $one = $value['email'];
+                    array_push($to,$one);
+                }                    
+            }elseif($receipient_id==11){
+            //C with less than 25% reporting  
+               $sql = "select distinct county_id from  rtk_county_percentage  where  month = '$month' and percentage  >75";
+               $counties = $this->db->query($sql)->result_array();
+               $emails = array();
+               foreach ($counties as $value) {
+                $county = $value['county_id'];
+                $q = "select email from user where countyid = 'county' and usertype_id='13' and status = 1 order by id desc";
+                $res = $this->db->query($q)->result_array();      
+                array_push($emails, $res);
+            }       
+            foreach ($emails AS $key => $value) {
+                $new_emails[] = $value[0];
+            }
+            $to = array();
+            foreach ($new_emails as $key => $value) {
+                $one = $value['email'];
+                array_push($to,$one);
+            }          
+        }elseif($receipient_id==12){
+            //C with 0% reporting 
+            $sql = "select distinct county_id from  rtk_county_percentage  where  month = '$month' and percentage  = 0";
+            $districts = $this->db->query($sql)->result_array();
+            $emails = array();
+            foreach ($districts as $value) {
+                $county = $value['county_id'];
+                $q = "select email from  user where user.county.id = '$county' and user.usertype_id = '13' and user.status = '1' order by user.id asc";
+                $res = $this->db->query($q)->result_array();      
+                array_push($emails, $res);
+            }       
+            foreach ($emails AS $key => $value) {
+                $new_emails[] = $value[0];
+            }
+            $to = array();
+            foreach ($new_emails as $key => $value) {
+                $one = $value['email'];
+                array_push($to,$one);
+            }                 
+            
+        }elseif($receipient_id==13){
+            //Sub C with 0% reporting   
+            $sql = "select distinct district_id from  rtk_district_percentage  where  month = '$month' and percentage  = 0";
+            $districts = $this->db->query($sql)->result_array();
+            $emails = array();
+            foreach ($districts as $value) {
+                $dist = $value['district_id'];
+                $q = "select email from user where district = $dist and usertype_id=7 and status = 1 order by id desc";
+                $res = $this->db->query($q)->result_array();      
+                array_push($emails, $res);
+            }       
+            foreach ($emails AS $key => $value) {
+                $new_emails[] = $value[0];
+            }
+            $to = array();
+            foreach ($new_emails as $key => $value) {
+                $one = $value['email'];
+                array_push($to,$one);
+            }               
+            
+        }
+
+
+        //Convert to get individual emails in a format suitable for sending
+        $receipient = implode($to, ',');       
+        print_r($receipient);die();
+        // include 'rtk_mailer.php';
+        // $newmail = new rtk_mailer();
+        // $response = $newmail->send_email($to, $message, $subject, $attach_file, $bcc_email);
+        
+        echo "Email Sent";
+    }
 
 
 

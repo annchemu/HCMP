@@ -10,11 +10,7 @@
 .tab-pane{padding-left: 6px;}
 #tab1 > ul > li > ul{font-size: 11px;}
 #tab1 > ul > li.span4{background: rgba(204, 204, 204, 0.14);padding: 13px;border: solid 1px #ccc;color: #92A8B4; height: 300px;overflow-y: scroll;}
-#chartdiv {width: 100%;height    : 500px;font-size : 11px;} 
-#stock_table{width: 100%;}
-table{
-    font-size: 12px;
-}
+#chartdiv {width: 100%;height: 500px;font-size : 11px;} 
 #switch_back{    
     font-size: 11px;
     font-weight: bold;
@@ -52,8 +48,8 @@ $(document).ready(function(){
    });
 </script>
 
-<div class="tabbable">
-    <div>Select Month <button id="switch_back" class="form-control" style="max-width: 220px;float:right;">Switch to Current Month</button>    </div>
+<div id="switch_tab" data-tab="1" class="tab_switch">
+    <div style="float:right"><label style="float:left" >Select Month: &nbsp;</label><button id="switch_back" class="" style="max-width: 220px;">Switch to Current Month</button>    
     <?php
         $month = $this->session->userdata('Month');
         if ($month==''){
@@ -65,7 +61,7 @@ $(document).ready(function(){
         $englishdate = date('F, Y', strtotime('+1 month'));
         $englishdate = date('F, Y', strtotime($monthyear));
     ?>
-     <select id="switch_month" class="form-control" style="max-width: 220px;background-color: #ffffff;border: 1px solid #cccccc;">
+     <select id="switch_month" class="" style="max-width: 220px;background-color: #ffffff;border: 1px solid #cccccc;float:right;">
        <option>-- <?php echo $englishdate;?> --</option>
         <?php 
 
@@ -79,7 +75,8 @@ $(document).ready(function(){
          ?>
         <option value="<?php echo $month_value ?>"><?php echo $month_text ?></option>;
     <?php } ?>
-    </select>    
+    </select> 
+    </div>   
         
     </div>
     <br/>    
@@ -91,17 +88,9 @@ $(document).ready(function(){
                     <div style="width:100%;height:450px;">
                         <div id="container" style="min-width: 310px;width:70%;height: 360px;float:left; margin: 0 auto;border: ridge 1px;"></div>
                         <div style="width:30%;font-size:11px;height: 360px;margin-left:10px ;float:left; margin: 0 auto;border: ridge 1px;overflow:scroll;background:rgba(204, 204, 204, 0.14);" class="span4" >
-                            <ul class="unstyled">
+                        <ul class="unstyled">
                         <?php
-                        foreach ($user_logs as $logs) {
-                            $action_clause = '';
-                            $action_clause = ($logs['action'] == 'ADDFDR') ? 'Added a Report' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDFDR') ? 'Edited a Report' : $action_clause;
-                            $action_clause = ($logs['action'] == 'ACTFCL') ? 'Activated a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'DCTFCL') ? 'Deactivated a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDFCL') ? 'Edited a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'ADDUSR') ? 'Added  a User' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDUSR') ? 'Edited a User' : $action_clause;
+                        foreach ($user_logs as $logs) {                            
                             $link = "";
                             $date = date('H:m:s d F, Y', $logs['timestamp']);
                             ?>
@@ -112,10 +101,11 @@ $(document).ready(function(){
                                 . $logs['fname'] . ' '
                                 . $logs['lname'] . ' '
                                 . '</a>'
-                                . $action_clause . ' '
+                                . $logs['description']. ' '
                                 . '<a href="' . $link . '" title="' . $date . '">'
-                                . timeAgo($logs['timestamp'])
+                                . $date
                                 . '</a>';
+                                //timeAgo($logs['timestamp'])
                                 ?>
                             </li>
                             <?php } ?>

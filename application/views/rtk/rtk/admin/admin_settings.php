@@ -806,8 +806,16 @@
           $('#add_deadline').focus();
           $('#add_deadline').val('10');
         }
+
+        
       });
       });
 
+    </script>
+    <script>
+    $('#settings_tab').addClass('active_tab');
+        $('#messaging_tab').removeClass('active_tab');
+        $('#trend_tab').removeClass('active_tab');
+        $('#users_tab').removeClass('active_tab');
     </script>
 

@@ -163,4 +163,10 @@ foreach ($res_arr1->result_array() as $value) {
 
     </div>
 </div>
+<script>
+$('#settings_tab').removeClass('active_tab');
+        $('#messaging_tab').removeClass('active_tab');
+        $('#trend_tab').removeClass('active_tab');
+        $('#users_tab').addClass('active_tab');
+    </script>
 

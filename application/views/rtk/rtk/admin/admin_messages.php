@@ -18,6 +18,7 @@
   <script src="<?php echo base_url().'assets/tagsinput/tagmanager.js'?>" type="text/javascript"></script>
   <script src="<?php echo base_url().'assets/tagsinput/bootstrap-tagsinput.js'?>" type="text/javascript"></script>
   <link rel="stylesheet" href="<?php echo base_url().'assets/tagsinput/bootstrap-tagsinput.css'?>" />
+  <script type="text/javascript" src="<?php echo base_url().'assets/tinymce/js/tinymce/tinymce.min.js'?>"></script>
 
 
   <script>
@@ -56,7 +57,7 @@
     z-index: 1000;
     display: none;
     float: left;
-    min-width: 160px;
+    min-width: 96%;
     padding: 5px 0;
     margin: 2px 0 0;
     list-style: none;
@@ -133,15 +134,15 @@
    -o-transition: all 0.2s;
    transition: all 0.2s;
  }
- #message{
-  width: 60%;
+ #message_div{
+  width: 100%;
   height: auto;
   border: ridge 1px;
-  margin-top: 10px;
-  background-color: #E6E6E6;
+  margin-top: 5%;
+  background-color: #F9F9F9;
   text-align: left;
 }
-#message input{
+#message_div input{
   float: left;
   margin-left: 10px;
 }
@@ -152,9 +153,12 @@
 </style>
 </head> 
 <body style="padding-top: 0;">  
-</div>
+<?php 
+    include('admin_links.php');    
+?>
+
 <center>
-<div id="message">
+<div id="message_div">
   <div class="panel-body">
     <form id="compose" name="compose">       
       <table id="compose_table" >
@@ -164,15 +168,15 @@
 
         <tr>  
                               
-             <input type="text" class="form-control" id="receipient_id">
-            <input class="typeahead form-control tm-input" id="receipient" type="text" placeholder="Enter Receipient" data-provide="typeahead" style="width:96%" />             
+             <input type="hidden" class="form-control" id="receipient_id">
+            <input class="typeahead form-control tm-input" id="receipient" type="text" placeholder="Enter Receipient" data-provide="typeahead" style="width:100%" />             
 
         </tr><br/>    
         <tr>
           <label>Subject:</label>
         </tr><br/>
         <tr>                   
-          <input class="form-control" id="subject" name="subject" type="text" style="width:96%" placeholder="RE:SUBJECT"/>   
+          <input class="form-control" id="subject" name="subject" type="text" style="width:100%" placeholder="RE:SUBJECT"/>   
           <tr>
             <label>Message:</label>
           </tr><br/>
@@ -181,9 +185,9 @@
           </tr> <br/>
           <tr>            
             <td><button id="save_message_btn" class="btn btn-primary">Send Message</button></td>
-            <td><button class="btn">Close</button></td>
+            <td>&nbsp;<button class="btn">Clear All</button></td>
           </tr>
-          <input type="hidden" name="receipient_id" id="receipient_id" value="NULL"/>
+          <!--input type="hidden" name="receipient_id" id="receipient_id" value="NULL"/-->
         </table>
       </form>   
     </div>
@@ -287,13 +291,22 @@ var substringMatcher = function(strs) {
                   id: id,            
                   }).done(function(data) {
                       alert("Data Loaded: " + data);                      
-                      window.location = "<?php echo base_url() . 'rtk_management/rtk_manager_admin_messages'; ?>";
+                      window.location = "<?php echo base_url() . 'rtk_management/rtk_manager_messages'; ?>";
                   });
                }); 
       });
                   
                  
 
+</script>
+<script type="text/javascript">
+tinymce.init({
+    selector: "textarea"
+ });
+$('#messaging_tab').addClass('active_tab');
+$('#trend_tab').removeClass('active_tab');
+$('#users_tab').removeClass('active_tab');
+$('#settings_tab').removeClass('active_tab');
 </script>
 
 </html>
