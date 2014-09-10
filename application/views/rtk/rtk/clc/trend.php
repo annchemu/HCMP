@@ -119,7 +119,7 @@ table{
                     data: <?php echo $jsonx1; ?>
                 },
                 {
-                    name: 'Trend',
+                    name: 'Daily Trend',
                     data: <?php echo $jsonx; ?>
                 }]
             });

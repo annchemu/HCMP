@@ -55,39 +55,39 @@ if ($this->session->userdata('switched_as') == 'dpp') {
             <?php echo $option; ?>
         </select>
         <br />
-        <div class="panel-group " id="accordion" style="padding: 0;">
-         <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a href="<?php echo base_url('Home'); ?>" href="#collapseOne" id="notifications"><span class="glyphicon glyphicon-home">
-                    </span>Home</a>
-                </h4>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title" id="dpp_stats">                        
-                    <a href="#" href="#collapseOne" id="notifications"><span class="glyphicon glyphicon-stats">
-                    </span>Statistics</a>
-                </h4>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a href="<?php echo site_url('rtk_management/scmlt_orders'); ?>" href="#collapseTwo" id="stocking_levels"><span class="glyphicon glyphicon-shopping-cart">
-                    </span>Orders</a>
-                </h4>
-            </div>
-        </div>
-        <div class="panel panel-default active-panel">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a href="<?php echo site_url('rtk_management/scmlt_allocations'); ?>" href="#collapseThree" id="expiries"><span class="glyphicon glyphicon-transfer">
-                    </span>Allocation</a>
-                </h4>
-            </div>
-        </div>
+         <div class="panel-group " id="accordion" style="padding: 0;">
+                <div class="panel panel-default" id="home">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a href="<?php echo base_url('Home'); ?>" href="#collapseOne" id="notifications"><span class="glyphicon glyphicon-home">
+                            </span>Home</a>
+                        </h4>
+                    </div>
+                </div>
+                <div class="panel panel-default" id="stats">
+                    <div class="panel-heading">
+                        <h4 class="panel-title" id="dpp_stats">                        
+                            <a href="#" href="#collapseOne" id="notifications"><span class="glyphicon glyphicon-stats">
+                            </span>Statistics</a>
+                        </h4>
+                    </div>
+                </div>
+                <div class="panel panel-default " id="orders">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a href="<?php echo site_url('rtk_management/scmlt_orders'); ?>" href="#collapseTwo" id="stocking_levels"><span class="glyphicon glyphicon-shopping-cart">
+                            </span>Orders</a>
+                        </h4>
+                    </div>
+                </div>
+                <div class="panel panel-default active-panel" id="allocations">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a href="<?php echo site_url('rtk_management/scmlt_allocations'); ?>" href="#collapseThree" id="expiries"><span class="glyphicon glyphicon-transfer">
+                            </span>Allocation</a>
+                        </h4>
+                    </div>
+                </div>
     </div>
 </div>
 </div>
@@ -100,8 +100,7 @@ if ($this->session->userdata('switched_as') == 'dpp') {
             <th><b>MFL Code</b></th>
             <th><b>Facility Name</b></th>
             <th><b>Commodity</b></th>
-            <th><b>(AMC)</b></th> 
-            <th><b>End Balance</b></th>
+            <th><b>(AMC)</b></th>             
             <th><b>Quantity Requested</b></th>
             <th><b>Quantity Allocated</b></th>
         </tr>
@@ -119,8 +118,7 @@ if ($this->session->userdata('switched_as') == 'dpp') {
             <td><?php echo $order['facility_code'];?></td>
             <td><?php echo $order['facility_name'];?></td>
             <td><?php echo $order['commodity_name'];?></td>
-            <td><?php echo $order['amc'];?></td>
-            <td><?php echo $order['closing_stock'];?></td>
+            <td><?php echo $order['amc'];?></td>           
             <td><?php echo $order['q_requested'];?></td>
             <td><?php echo $order['allocated'];?></td>
         </tr>
@@ -139,10 +137,10 @@ if ($this->session->userdata('switched_as') == 'dpp') {
 <script src="<?php echo base_url(); ?>assets/tablecloth/assets/js/jquery.tablecloth.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#allocation_table').dataTable({
+         $('#allocation_table').dataTable({
             "sDom": "T lfrtip",
-            "aaSorting": [[0, "desc"]],
-            "bPaginate": false,            
+            "aaSorting": [[0, 'desc']],
+            "bPaginate": true,            
             "sScrollY": "377px",
             "sScrollX": "100%",
             "sPaginationType": "bootstrap",
@@ -163,15 +161,22 @@ if ($this->session->userdata('switched_as') == 'dpp') {
                 "sSwfPath": "<?php echo base_url(); ?>assets/datatable/media/swf/copy_csv_xls_pdf.swf"
             }
         });
-        $("table").tablecloth({theme: "paper",
+        $("#allocation_table").tablecloth({theme: "paper",
           bordered: true,
           condensed: true,
           striped: true,
-          sortable: true,
-          clean: true,
-          cleanElements: "th td",
+          sortable: true,                   
           customClass: "my-table"
-      });
+        });
+      //   $("table").tablecloth({theme: "paper",
+      //     bordered: true,
+      //     condensed: false,
+      //     striped: true,
+      //     sortable: true,
+      //     clean: true,
+      //     cleanElements: "th td",
+      //     customClass: "my-table"
+      // });
       $.fn.slideFadeToggle = function(speed, easing, callback) {
             return this.animate({
                 opacity: 'toggle',
@@ -182,12 +187,11 @@ if ($this->session->userdata('switched_as') == 'dpp') {
         $("#tablediv").delay(15000).css( "height", '450px');
         $(".dataTables_filter").delay(15000).css( "color", '#ccc');
 
-        $("#dpp_stats").click(function(event)
-        {
+         $("#dpp_stats").click(function(event) {
             $(".dataTables_wrapper").load("<?php echo base_url(); ?>rtk_management/summary_tab_display/" + <?php echo $countyid; ?> + "/<?php echo $year; ?>/<?php echo $month; ?>/");
-
+            $('#allocations').removeClass('active-panel');
+            $('#stats').addClass('active-panel');
         });
-
         $('#switch_district').change(function() {
             var value = $('#switch_district').val();
             var path = "<?php echo base_url() . 'rtk_management/switch_district/'; ?>" + value + "/dpp";

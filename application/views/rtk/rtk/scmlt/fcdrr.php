@@ -179,6 +179,19 @@ function compute_tests_done(){
 
 $(document).ready(function() {
 
+$("#begin_date").datepicker({
+    defaultDate: "",
+    changeMontd: true,
+    changeYear: true,
+    numberOfMontds: 1,
+});
+$("#end_date").datepicker({
+    defaultDate: "",
+    changeMonth: true,
+    changeYear: true,
+    numberOfMonths: 1,
+    
+});
 
     var final = 0;
     var num_final = parseInt(final);
@@ -611,20 +624,6 @@ $(function(){
         alert('The Report has already been SUbmitted.');
         window.location('home_controller');
     }
-    $("#begin_date").datepicker({
-    defaultDate: "",
-    changeMontd: true,
-    changeYear: true,
-    numberOfMontds: 1,
-});
-$("#end_date").datepicker({
-    defaultDate: "",
-    changeMonth: true,
-    changeYear: true,
-    numberOfMonths: 1,
-    
-});
-
 });
 $("table").tablecloth({
     bordered: true,

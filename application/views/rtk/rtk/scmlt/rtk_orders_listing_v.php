@@ -260,7 +260,7 @@ $district_name = Districts::get_district_name($district)->toArray();
          $('#orders_table').dataTable({
             "sDom": "T lfrtip",
             "aaSorting": [[0, 'desc']],
-            "bPaginate": false,            
+            "bPaginate": true,            
             "sScrollY": "377px",
             "sScrollX": "100%",
             "sPaginationType": "bootstrap",
@@ -292,11 +292,11 @@ $district_name = Districts::get_district_name($district)->toArray();
         $("#tablediv").delay(15000).css( "height", '450px');
         $(".dataTables_filter").delay(15000).css( "color", '#ccc');
 
-        $("#dpp_stats").click(function(event)
-        {
-            $(".tablediv").load("<?php echo base_url(); ?>rtk_management/summary_tab_display/" + <?php echo $countyid; ?> + "/<?php echo $year; ?>/<?php echo $month; ?>/");
-
-        });
+         $("#dpp_stats").click(function(event) {
+            $(".dataTables_wrapper").load("<?php echo base_url(); ?>rtk_management/summary_tab_display/" + <?php echo $countyid; ?> + "/<?php echo $year; ?>/<?php echo $month; ?>/");
+            $('#orders').removeClass('active-panel');
+            $('#stats').addClass('active-panel');
+        });;
     
 });
 </script>
