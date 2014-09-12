@@ -1036,28 +1036,31 @@ public function rtk_manager_settings() {
         public function rtk_send_message() {
             $receipient_id = mysql_real_escape_string($_POST['id']);
             $subject = mysql_real_escape_string($_POST['subject']);
-            $message = mysql_real_escape_string($_POST['message']);        
+            $raw_message = mysql_real_escape_string($_POST['message']);             
             $attach_file = null;
-            $bcc_email = null;
+            //$bcc_email = 'ttunduny@gmail.com,tngugi@clintonhealthaccess.org,annchemu@gmail.com';
+            //$bcc_email = '';
             $receipient = array();
             $month = date('mY');       
             if($receipient_id==1){
             //all users
                 $sql = "SELECT email FROM user WHERE usertype_id in (0,7,8,11,13) and status=1 ORDER BY id DESC";
                 $res = $this->db->query($sql)->result_array();                  
-                $to =array();
-                foreach ($res as  $value) {
+                //$to =array();
+                $to ="";
+                foreach ($res as $key => $value) {
                     $one = $value['email'];
-                    array_push($to,$one);
-                }    
+                    $to.= $one.',';
+                }       
+                  
             }elseif($receipient_id==2){
             //All SCMLTs
                 $sql = "SELECT email FROM user WHERE usertype_id = 7 and status = 1 ORDER BY id DESC";
-                $res = $this->db->query($sql)->result_array();                  
-                $to =array();
-                foreach ($res as  $value) {
+                $res = $this->db->query($sql)->result_array();                                  
+                $to ="";
+                foreach ($res as $key => $value) {
                     $one = $value['email'];
-                    array_push($to,$one);
+                    $to.= $one.',';
                 }             
 
             }elseif($receipient_id==3){
@@ -1268,14 +1271,109 @@ public function rtk_manager_settings() {
             
         }
 
+        //echo "$to";die();
+        //$msg = $this->trigger_emails($message);
 
         //Convert to get individual emails in a format suitable for sending
-        $receipient = implode($to, ',');       
-        print_r($receipient);die();
+        //echo nl2br($desc);
+       // $message = nl2br($raw_message);
+       $message = str_replace(array('\\n', "\r", "\n"), "<br />", $raw_message);
+       //  //$message = str_replace('\\n', '', $raw_message); 
+       //  echo "$message";die();          
+       //  //$receipient = 'ttunduny@gmail.com';        
+       //  //$receipient = implode($to, ',');     
+       //  //echo "$bcc_email";die();
+        
+       $bcc_email = 'ttunduny@gmail.com,tngugi@clintonhealthaccess.org,annchemu@gmail.com';
+       // // $receipient = array();
+       // // $receipient =$to; 
+
+       //  //parse_str($_POST['receipients'], $receipient);
+       //  //$receipient = $receipient['hidden-receipients'];
         // include 'rtk_mailer.php';
         // $newmail = new rtk_mailer();
-        // $response = $newmail->send_email($to, $message, $subject, $attach_file, $bcc_email);
+        // $response = $newmail->send_email($to, $message, $subject, null, $bcc_email);
         
+        echo $msg;
+    }
+    public function trigger_emails() {
+        $subject = 'RTK DATA VALIDITY';
+        $message = "Dear All,<br/>We would like to bring to your notice the following changes to the system:<br/><ol>
+        <li>The autocalculating feature for the Screening - Determine has been removed, and you will be required to type in the values, the only calculation done is the ending balance</li>
+        <li>Please enter the begining balances of all commmodities as per the FCDRR where there is a zero (to enable data validity)</li>
+        <li>Where there are losses, positive adjustments and/or negative adjustments, please ensure that you fill out the explanation for the same, otherwise you wil not be able to save the report</li></ol><br/>
+        All these changes have been made in order to ensure that the system will serve you better.<br/>
+        Please use the remaining time to ensure that all the reports submitted for this month fulfil the above requirements. <br/>
+        Use the edit link on the orders page to edit the reports.<br/>
+        <b>With Regards,<br/>Titus Tunduny</b><br/>
+        for: The RTK Development Team<br/>";
+        $attach_file = null;
+        $bcc_email = 'ttunduny@gmail.com';
+        include 'rtk_mailer.php';
+
+        $sql = "select distinct email from user where usertype_id='7' and status =1";
+        $res = $this->db->query($sql)->result_array();
+        $count = count($res);
+        $a = 0;
+        $b = 99;
+
+        for ($i=$a; $i < $b ; $i++) {             
+            $sql1 = "select distinct email from user where usertype_id='7' and status =1 limit $a,$b";
+            $res1 = $this->db->query($sql1)->result_array();
+            $to ="";
+            foreach ($res1 as $key => $value) {
+                $one = $value['email'];
+                $to.= $one.',';
+            }
+            $newmail = new rtk_mailer();
+            $response = $newmail->send_email('titus.tunduny@strathmore.edu', $message, $subject, $attach_file, $bcc_email); 
+            $a = $b;
+            if($b<$count){
+                $b+=99;
+            }else{
+                break;
+            }           
+
+        }  
+        // $sql = "select distinct email from user where usertype_id='7' and status =1";
+        // $res = $this->db->query($sql)->result_array();
+
+        // $subject = 'RTK DATA VALIDITY';
+        // $message = "Dear All,<br/>We would like to bring to your notice the following changes to the system:<br/><ol>
+        // <li>The autocalculating feature for the Screening - Determine has been removed, and you will be required to type in the values, the only calculation done is the ending balance</li>
+        // <li>Please enter the begining balances of all commmodities as per the FCDRR where there is a zero (to enable data validity)</li>
+        // <li>Where there are losses, positive adjustments and/or negative adjustments, please ensure that you fill out the explanation for the same, otherwise you wil not be able to save the report</li></ol><br/>
+        // All these changes have been made in order to ensure that the system will serve you better.<br/>
+        // Please use the remaining time to ensure that all the reports submitted for this month fulfil the above requirements. <br/>
+        // Use the edit link on the orders page to edit the reports.<br/>
+        // <b>With Regards,<br/>Titus Tunduny</b><br/>
+        // for: The RTK Development Team<br/>";
+
+        // $attach_file = null;
+        // $bcc_email = 'ttunduny@gmail.com';
+        // include 'rtk_mailer.php';
+        // $to ="";
+        // foreach ($res as $key => $value) {
+        //     $one = $value['email'];
+        //     $to.= $one.',';
+        // }       
+        //$max = count($res);
+        // $a = 0;
+        // $b = 100;
+        // for ($i=$a; $i < $b ; $i++) {             
+        //     $one = $res[$i]['email'];
+        //     $to.= $one.',';            
+        //     $newmail = new rtk_mailer();
+        //     $response = $newmail->send_email('titus.tunduny@strathmore.edu', $message, $subject, $attach_file, $bcc_email);
+        //     }  
+        // }        
+        
+        
+        
+        //$sql = "INSERT INTO `rtk_messages`(`id`, `sender`, `subject`, `message`, `receipient`, `state`) VALUES (NULL,'$sender','$subject','$message','$receipient','0')";
+        //$this->db->query($sql);
+        //$object_id = $this->db->insert_id();
+       // $this->logData('23', $object_id);
         echo "Email Sent";
     }
 

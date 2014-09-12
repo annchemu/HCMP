@@ -281,7 +281,8 @@ var substringMatcher = function(strs) {
              // var form = $( "form[name=compose]").serialize();        
               //var receipient = $("#receipient").val();
               var subject = $("#subject").val();
-              var message = $("#message").val(); 
+              var message = tinymce.get('message').getContent();
+             // var message = $("#message").val(); 
               var id = $("#receipient_id").val();             
               //alert('Receipients='+receipients+' Subject'+subject+' Message'+message);
               
