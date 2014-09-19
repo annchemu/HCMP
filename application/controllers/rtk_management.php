@@ -147,7 +147,7 @@ class Rtk_Management extends Home_controller {
             array_push($xArr, $count);
         }
 
-        //$data['stock_status'] = $this->_national_reports_sum($year, $month);
+       $data['stock_status'] = $this->_national_reports_sum($year, $month);
         $data['cumulative_result'] = $cumulative_result;
         $data['jsony'] = json_encode($yArr);
         $data['jsonx'] = str_replace('"', "", json_encode($xArr));
@@ -6830,6 +6830,7 @@ WHERE
         $num_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $lastdate = $year . '-' . $month . '-' . $num_days;
         $sql = "SELECT 
+
             counties.county,
             counties.id,
             lab_commodities.commodity_name,
@@ -6872,10 +6873,20 @@ WHERE
         $result2 = $res2->result_array();
         array_push($returnable, $result2);
 
-        $sql4 = $sql . " AND lab_commodities.id = 3 Group By counties.county";
-        $res3 = $this->db->query($sql4);
-        $result3 = $res3->result_array();
-        array_push($returnable, $result3);
+        $sql4 = $sql . " AND lab_commodities.id = 4 Group By counties.county";
+        $res4 = $this->db->query($sql4);
+        $result4 = $res4->result_array();
+        array_push($returnable, $result4);
+
+        $sql5 = $sql . " AND lab_commodities.id = 5 Group By counties.county";
+        $res5 = $this->db->query($sql5);
+        $result5 = $res5->result_array();
+        array_push($returnable, $result5);
+
+        $sql6 = $sql . " AND lab_commodities.id = 6 Group By counties.county";
+        $res6 = $this->db->query($sql6);
+        $result6 = $res6->result_array();
+        array_push($returnable, $result6);
 //        echo "<pre>";print_r($returnable);die;
         //echo($sql4);die;
         return $returnable;
