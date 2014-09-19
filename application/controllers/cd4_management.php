@@ -1138,7 +1138,7 @@ AND district =' . $district . '');
             echo ("NASCOP link is down");
             die;
         }
-        $sql = 'select count(id) as count from `api_gen` where month=' . $month . ' AND year =' . $year;
+        $sql = 'select count(id) as count from `api_gens` where month=' . $month . ' AND year =' . $year;
         $result = $this->db->query($sql);
         $id = $result->result_array();
         $num_rows = $id[0]['count'];
@@ -1174,8 +1174,7 @@ AND district =' . $district . '');
             $reported_facilities_to_sync = array();
             $jsonfacilities = json_encode($allfacilities);
             $now = time();
-            $data = array(
-                'id' => 'NULL',
+            $data = array(                
                 'json' => $jsonfacilities,
                 'date_sync' => $now,
                 'month' => $month,
@@ -1183,7 +1182,7 @@ AND district =' . $district . '');
             );
             $this->db->where('month', $month);
             $this->db->where('year', $year);
-            $this->db->update('api_gens', $data);
+            $this->db->update('api_gen', $data);
 
             echo "Counties Done synchronizing. Now synchronizing Facilities...<br />";
 

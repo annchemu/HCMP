@@ -1839,7 +1839,11 @@ public function rtk_manager_stocks($month=null) {
     public function partner_home() {
         $lastday = date('Y-m-d', strtotime("last day of previous month"));
         $countyid = $this->session->userdata('county_id');
+<<<<<<< HEAD
         $partner_id = $this->session->userdata('partner_id');  		
+=======
+        $partner_id = $this->session->userdata('partner_id');        
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         $districts = districts::getDistrict($countyid);
         $county_name = counties::get_county_name($countyid);
         $County = $county_name[0]['county'];
@@ -1891,7 +1895,11 @@ public function rtk_manager_stocks($month=null) {
         $partner_id = $this->session->userdata('partner_id');                        
         $sql = "select distinct counties.id, counties.county from  counties, facilities, districts where
             facilities.district = districts.id and facilities.partner = '$partner_id'  and districts.county = counties.id
+<<<<<<< HEAD
              and facilities.rtk_enabled = '1'";
+=======
+             and facilities.rtk_enabled = '1'";        
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         $res_counties = $this->db->query($sql)->result_array();        
         $table_data_district = array();
         $table_data_facilities = array();
@@ -1927,7 +1935,11 @@ public function rtk_manager_stocks($month=null) {
         $this->load->view("rtk/template", $data);        
     }
     public function partner_commodity_usage() {
+<<<<<<< HEAD
 		$partner = $this->session->userdata('partner_id');          
+=======
+        $partner = $this->session->userdata('partner_id');          
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         $commodity = $this->session->userdata('commodity_id');          
         if($commodity!=''){
             $commodity_id = $commodity;
@@ -1968,7 +1980,11 @@ public function rtk_manager_stocks($month=null) {
         $monthyear = $year . '-' . $month . '-1';
         $englishdate = date('F, Y', strtotime($monthyear));
         $data['graphdata'] = $this->partner_commodity_percentages($partner, $commodity_id, $month);
+<<<<<<< HEAD
          // echo "<pre>"; print_r($data['graphdata']);die;
+=======
+        //echo "<pre>"; print_r($data['graphdata']);die;
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         //$data['county_summary'] = $this->_requested_vs_allocated($year, $month, $countyid);
         $data['tdata'] = $tdata;
         $data['county'] = $County;
@@ -3050,6 +3066,7 @@ public function rtk_summary_county($county, $year, $month) {
             $late_percentage = $late_reporting / $total_reporting_facilities * 100;
         }
 
+<<<<<<< HEAD
 
         $late_percentage = number_format($late_percentage, 0);
         if ($total_reported_facilities > $total_reporting_facilities) {
@@ -3143,7 +3160,7 @@ public function rtk_summary_county($county, $year, $month) {
         } else {
             $late_percentage = $late_reporting / $total_reporting_facilities * 100;
         }
-
+=======
 
         $late_percentage = number_format($late_percentage, 0);
         if ($total_reported_facilities > $total_reporting_facilities) {
@@ -3155,6 +3172,109 @@ public function rtk_summary_county($county, $year, $month) {
             $late_reporting = $total_reporting_facilities;
             $late_percentage = $reported_percentage;
         }
+        $returnable = array('Month' => $text_month, 'Year' => $year, 'district' => $districtname, 'district_id' => $district_id, 'total_facilities' => $total_reporting_facilities, 'reported' => $total_reported_facilities, 'reported_percentage' => $reported_percentage, 'nonreported' => $nonreported, 'nonreported_percentage' => $non_reported_percentage, 'late_reports' => $late_reporting, 'late_reports_percentage' => $late_percentage);
+        return $returnable;
+    }
+
+    public function partner_summary($county, $year, $month,$partner_id) {                
+        $returnable = array();
+        $nonreported;
+        $reported_percentage;
+        $late_percentage;
+
+        // Sets the timezone and date variables for last day of previous month and this month
+        date_default_timezone_set('EUROPE/moscow');
+        $month = $month + 1;
+        $prev_month = $month - 1;
+        $last_day_current_month = date('Y-m-d', mktime(0, 0, 0, $month, 0, $year));
+        $first_day_current_month = date('Y-m-', mktime(0, 0, 0, $month, 0, $year));
+        $first_day_current_month .= '1';
+        $lastday_thismonth = date('Y-m-d', strtotime("last day of this month"));
+        $month -= 1;
+        $day10 = $year . '-' . $month . '-10';
+        $day11 = $year . '-' . $month . '-11';
+        $day12 = $year . '-' . $month . '-12';
+        $late_reporting = 0;
+        $text_month = date('F', strtotime($day10));
+
+        $q = "SELECT * 
+        FROM facilities, districts, counties
+        WHERE facilities.district = districts.id
+        AND districts.county = counties.id
+        and counties.id = '$county'
+        AND facilities.district = districts.id 
+        and facilities.partner = '$partner_id'
+        AND facilities.rtk_enabled =1
+        ORDER BY  `facilities`.`facility_name` ASC ";
+
+        $q_res = $this->db->query($q);
+        $total_reporting_facilities = $q_res->num_rows();        
+        $q = "SELECT DISTINCT lab_commodity_orders.facility_code, lab_commodity_orders.id,lab_commodity_orders.order_date
+        FROM lab_commodity_orders, districts, counties,facilities
+        WHERE districts.id = lab_commodity_orders.district_id
+        AND districts.county = counties.id
+        and counties.id = '$county'
+        AND facilities.district = districts.id 
+        and facilities.partner = '$partner_id'
+        and lab_commodity_orders.facility_code = facilities.facility_code
+        AND lab_commodity_orders.order_date
+        BETWEEN '$first_day_current_month'
+        AND '$last_day_current_month'";       
+        $q_res1 = $this->db->query($q);
+        $total_reported_facilities = $q_res1->num_rows();    
+
+        foreach ($q_res1->result_array() as $vals) {
+            //            echo "<pre>";var_dump($vals);echo "</pre>";
+            if ($vals['order_date'] == $day10 || $vals['order_date'] == $day11 || $vals['order_date'] == $day12) {
+                $late_reporting += 1;
+                //                echo "<pre>";var_dump($vals);echo "</pre>";
+            }
+        }
+
+        $nonreported = $total_reporting_facilities - $total_reported_facilities;
+
+        if ($total_reporting_facilities == 0) {
+            $non_reported_percentage = 0;
+        } else {
+            $non_reported_percentage = $nonreported / $total_reporting_facilities * 100;
+        }
+
+        $non_reported_percentage = number_format($non_reported_percentage, 0);
+
+        if ($total_reporting_facilities == 0) {
+            $reported_percentage = 0;
+        } else {
+            $reported_percentage = $total_reported_facilities / $total_reporting_facilities * 100;
+        }
+
+        $reported_percentage = number_format($reported_percentage, 0);
+
+        if ($total_reporting_facilities == 0) {
+            $late_percentage = 0;
+        } else {
+            $late_percentage = $late_reporting / $total_reporting_facilities * 100;
+        }
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
+
+
+        $late_percentage = number_format($late_percentage, 0);
+        if ($total_reported_facilities > $total_reporting_facilities) {
+            $reported_percentage = 100;
+            $nonreported = 0;
+            $total_reported_facilities = $total_reporting_facilities;
+<<<<<<< HEAD
+        }
+        if ($late_reporting > $total_reporting_facilities) {
+            $late_reporting = $total_reporting_facilities;
+            $late_percentage = $reported_percentage;
+        }
+=======
+        }
+        if ($late_reporting > $total_reporting_facilities) {
+            $late_reporting = $total_reporting_facilities;
+            $late_percentage = $reported_percentage;
+        }
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         $returnable = array('Month' => $text_month, 'Year' => $year,'total_facilities' => $total_reporting_facilities, 'reported' => $total_reported_facilities, 'reported_percentage' => $reported_percentage, 'nonreported' => $nonreported, 'nonreported_percentage' => $non_reported_percentage, 'late_reports' => $late_reporting, 'late_reports_percentage' => $late_percentage);
         return $returnable;
     }
@@ -3336,6 +3456,7 @@ function county_reporting_percentages($county, $year, $month) {
         //        $this->load->view('rtk/rtk/rca/county_reporting_view', $data);
     return $data;
 }
+<<<<<<< HEAD
 
 function district_reporting_percentages($district, $year, $month) {
 
@@ -3365,6 +3486,37 @@ function district_reporting_percentages($district, $year, $month) {
     return $percentage;
 }
 
+=======
+
+function district_reporting_percentages($district, $year, $month) {
+
+
+    $firstdate = $year . '-' . $month . '-01';
+    $firstday = date("Y-m-d", strtotime("$firstdate +1 Month "));
+    $month = date("m", strtotime("$firstdate +1 Month "));
+    $year = date("Y", strtotime("$firstdate +1 Month "));
+    $num_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+    $lastdate = $year . '-' . $month . '-' . $num_days;
+
+    $lastday = date('Y-m-d', strtotime("last day of previous month"));
+    $q = 'SELECT * FROM  `facilities` WHERE  `district` =' . $district . ' AND  `rtk_enabled` =1';
+    $q2 = "SELECT DISTINCT lab_commodity_orders.facility_code, facilities.facility_code, facilities.facility_name, lab_commodity_orders.id, lab_commodity_orders.district_id, lab_commodity_orders.order_date
+    FROM lab_commodity_orders, districts, counties, facilities
+    WHERE districts.id = lab_commodity_orders.district_id
+    AND districts.county = counties.id
+    AND facilities.facility_code = lab_commodity_orders.facility_code
+    AND districts.id = $district
+    AND lab_commodity_orders.order_date
+    BETWEEN  '$firstday'
+    AND  '$lastdate'";
+    $query = $this->db->query($q);
+    $query2 = $this->db->query($q2);
+    $percentage = $query2->num_rows() / $query->num_rows() * 100;
+    $percentage = number_format($percentage, $decimals = 0);
+    return $percentage;
+}
+
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 function _districts_in_county($county) {
     $q = 'SELECT id,district FROM  `districts` WHERE  `county` =' . $county;
     $this->db->query($q);
@@ -3861,6 +4013,7 @@ function _get_rtk_users() {
     $returnable = array_merge($arr, $arr2);       
     return $returnable;
 }
+<<<<<<< HEAD
 
 public function allocation($zone = NULL, $county = NULL, $district = NULL, $facility = NULL, $sincedate = NULL, $enddate = NULL) {
         // function to filter allocation based on multiple parameter
@@ -3873,6 +4026,20 @@ public function allocation($zone = NULL, $county = NULL, $district = NULL, $faci
         $conditions = (isset($sincedate)) ? $conditions . " AND lab_commodity_details.allocated_date >= $sincedate" : $conditions . ' ';
         $conditions = (isset($enddate)) ? $conditions . " AND lab_commodity_details.allocated_date <= $enddate" : $conditions . ' ';
 
+=======
+
+public function allocation($zone = NULL, $county = NULL, $district = NULL, $facility = NULL, $sincedate = NULL, $enddate = NULL) {
+        // function to filter allocation based on multiple parameter
+        // zone, county,district, sincedate,
+        $conditions = '';
+        $conditions = (isset($zone)) ? " AND facilities.Zone = 'Zone $zone'" : '';
+        $conditions = (isset($county)) ? $conditions . " AND counties.id = $county" : $conditions . ' ';
+        $conditions = (isset($district)) ? $conditions . " AND districts.id = $district" : $conditions . ' ';
+        $conditions = (isset($facility)) ? $conditions . " AND facilities.facility_code = $facility" : $conditions . ' ';
+        $conditions = (isset($sincedate)) ? $conditions . " AND lab_commodity_details.allocated_date >= $sincedate" : $conditions . ' ';
+        $conditions = (isset($enddate)) ? $conditions . " AND lab_commodity_details.allocated_date <= $enddate" : $conditions . ' ';
+
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
         $sql = "select facilities.facility_name,facilities.facility_code,facilities.Zone, facilities.contactperson,facilities.cellphone, lab_commodity_details.commodity_id,
         lab_commodity_details.allocated,lab_commodity_details.allocated_date,lab_commodity_orders.order_date,lab_commodities.commodity_name,facility_amc.amc,lab_commodity_details.closing_stock,lab_commodity_details.q_requested
         from facilities, lab_commodity_orders,lab_commodity_details, counties,districts,lab_commodities,lab_commodity_categories,facility_amc
@@ -3984,6 +4151,7 @@ function get_district_percentages_month($month=null){
         $year = substr($month, -4);
         $month = substr($month, 0,2);            
         $monthyear = $month.$year;                    
+<<<<<<< HEAD
 
     }
     $sql = "select id from districts";
@@ -4009,6 +4177,34 @@ function get_district_percentages_month($month=null){
 
     
 }
+=======
+
+    }
+    $sql = "select id from districts";
+    $result = $this->db->query($sql)->result_array();
+    foreach ($result as $key => $value) {
+        $id = $value['id'];
+        $q = "select count(facilities.facility_code) as facilities from
+        facilities
+        where
+        facilities.district = '$id'
+        and facilities.rtk_enabled = '1'";               
+        $facilities = $this->db->query($q)->result_array();
+        foreach ($facilities as $key => $value) {
+            $facility_count = $value['facilities'];
+        }            
+        //$percentage = $this->rtk_summary_district($id, $year, $month);
+        $reported = 0;
+        //$reported = $percentage['reported']; 
+        $q = "insert into rtk_district_percentage (district_id, facilities,reported,month) values ($id,$facility_count,$reported,'$monthyear')";
+        $this->db->query($q);
+
+    }             
+
+    
+}
+
+>>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 function update_district_percentages_month($month=null){
     if(isset($month)){           
         $year = substr($month, -4);
