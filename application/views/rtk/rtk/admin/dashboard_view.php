@@ -4,6 +4,7 @@ include_once 'ago_time.php';
 
 $reporting_percentage = $cumulative_result/$total_facilities*100;
 $reporting_percentage = number_format($reporting_percentage, $decimals = 0);
+$current_month = date('mY', time());     
 ?>
 <style type="text/css">
 #inner_wrapper{font-size: 80%;}
@@ -14,6 +15,11 @@ $reporting_percentage = number_format($reporting_percentage, $decimals = 0);
 #stock_table{width: 100%;}
 table{
     font-size: 12px;
+}
+#switch_back{    
+    font-size: 11px;
+    font-weight: bold;
+    color: green;   
 }
 </style>
 <script type="text/javascript">
@@ -27,12 +33,28 @@ $(document).ready(function(){
 //              alert (path);
             window.location.href = path;
         });
+    var active_month = '<?php echo $active_month ?>';
+    var current_month = '<?php echo $current_month ?>';   
+    if(active_month!=current_month){
+        $("#switch_back").show();
+        $('#switch').show();
+    }else{        
+        $('#switch_back').hide();
+        $('#switch_back').hide();
+    }
+     $('#switch_back').click(function() {
+            var value = current_month;
+            var path_full = 'rtk_management/switch_month/'+value+'/rtk_manager/';
+            var path = "<?php echo base_url(); ?>" + path_full;
+            window.location.href = path;
+        });
 
 
    });
 </script>
+<?php include_once('admin_links');?>
 <div class="tabbable">
-    <div>Select Month
+    <div>Select Month <button id="switch_back" class="form-control" style="max-width: 220px;">Switch to Current Month</button>    </div>
     <?php
         $month = $this->session->userdata('Month');
         if ($month==''){
@@ -58,9 +80,10 @@ $(document).ready(function(){
          ?>
         <option value="<?php echo $month_value ?>"><?php echo $month_text ?></option>;
     <?php } ?>
-    </select>
+    </select>    
         
     </div>
+    <br/>
     <ul class="nav nav-tabs">
         <li class="active"><a href="#tab1" data-toggle="tab">Activity</a></li>
         <li><a href="#StockStatus" data-toggle="tab">Stock Status</a></li>
@@ -116,39 +139,8 @@ $(document).ready(function(){
 
                     </div>
                 </div>
-                    </div>
-                    
-                    li class="span4" style="margin-left:10px;float:left;">
-                    <ul class="unstyled">
-                        <?php
-                        foreach ($user_logs as $logs) {
-                            $action_clause = '';
-                            $action_clause = ($logs['action'] == 'ADDFDR') ? 'Added a Report' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDFDR') ? 'Edited a Report' : $action_clause;
-                            $action_clause = ($logs['action'] == 'ACTFCL') ? 'Activated a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'DCTFCL') ? 'Deactivated a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDFCL') ? 'Edited a Facility' : $action_clause;
-                            $action_clause = ($logs['action'] == 'ADDUSR') ? 'Added  a User' : $action_clause;
-                            $action_clause = ($logs['action'] == 'UPDUSR') ? 'Edited a User' : $action_clause;
-                            $link = "";
-                            $date = date('H:m:s d F, Y', $logs['timestamp']);
-                            ?>
-                            <li>
-                                <?php
-                                echo
-                                '<a href="' . $link . '" title="' . $date . '">'
-                                . $logs['fname'] . ' '
-                                . $logs['lname'] . ' '
-                                . '</a>'
-                                . $action_clause . ' '
-                                . '<a href="' . $link . '" title="' . $date . '">'
-                                . timeAgo($logs['timestamp'])
-                                . '</a>';
-                                ?>
-                            </li>
-                            <?php } ?>
-                        </ul>
-                    </li
+                    </div>                    
+                   
                      
                       
                 </li>
@@ -159,47 +151,7 @@ $(document).ready(function(){
 
             </div>
             
-            <div class="tab-pane" id="StockStatus">
-                <table id="stock_table">
-                    <thead>
-                        <th>County</th>
-                        <th>Commodity</th>
-                        <th>Beginning Balance</th>
-                        <th>Received Qty</th>
-                        <th>Used Qty</th>
-                        <th>Tests Done</th>
-                        <th>Closing Balance</th>
-                        <th>Requested Qty</th>
-                        <th>Out of Stock days</th>
-                        <th>Expiring Qty</th>
-                        <th>Allocated Qty</th>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $count = count($stock_status);
-                        for ($i=0; $i<$count; $i++){
-                            foreach ($stock_status[$i] as $key => $value) { ?>
-                            <tr>
-                                <td><?php echo $value['county']; ?></td>
-                                <td><?php echo $value['commodity_name']; ?></td>
-                                <td><?php echo $value['sum_opening']; ?></td>
-                                <td><?php echo $value['sum_received']; ?></td>
-                                <td><?php echo $value['sum_used']; ?></td>
-                                <td><?php echo $value['sum_tests']; ?></td>
-                                <td><?php echo $value['sum_closing_bal']; ?></td>
-                                <td><?php echo $value['sum_requested']; ?></td>
-                                <td><?php echo $value['sum_days']; ?></td>
-                                <td><?php echo $value['sum_expiring']; ?></td>
-                                <td><?php echo $value['sum_allocated']; ?></td>
-                            </tr>
-                            <?php } }?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="tab-pane" id="CountyProgess">
-                    <p>Howdy, I'm in Section 2.</p>
-                </div>
+            
             </div>
         </div>
         <script type="text/javascript">
@@ -269,6 +221,7 @@ $(document).ready(function(){
                     data: <?php echo $jsonx; ?>
                 }]
             });
+   
 });
 </script>
 
