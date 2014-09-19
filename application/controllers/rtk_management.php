@@ -601,6 +601,22 @@ public function get_lab_report($order_no, $report_type) {
                     $data['content_view'] = "rtk/rtk/clc/home";
                     $this->load->view("rtk/template", $data);
                 }
+                public function county_profile($county) {
+        $data = array();
+        $lastday = date('Y-m-d', strtotime("last day of previous month"));
+        $County = $this->session->userdata('county_name');
+        $Countyid = $this->session->userdata('county_id');
+        $districts = districts::getDistrict($Countyid);
+        $facility = facilities::get_facility_name_($mfl);
+
+        $data['county'] = $County;
+        $data['countyid'] = $Countyid;
+        $data['title'] = 'Facility Profile: ' . $facility['facility_name'];
+        $data['banner_text'] = 'Facility Profile: ' . $facility['facility_name'];
+        $data['content_view'] = "rtk/rtk/clc/county_profile_view";
+
+        $this->load->view("rtk/template", $data);
+    }
 
                 public function rca_districts() {
                     $county = $this->session->userdata('county_id');
@@ -1822,6 +1838,46 @@ public function rtk_manager_settings() {
         $data['content_view'] = "rtk/rtk/partner/partner_dashboard";
         $this->load->view("rtk/template", $data);
     }
+    public function partner_facilities() {
+        $lastday = date('Y-m-d', strtotime("last day of previous month"));        
+        $partner_id = $this->session->userdata('partner_id');                        
+        $sql = "select distinct counties.id, counties.county from  counties, facilities, districts where
+            facilities.district = districts.id and facilities.partner = '$partner_id'  and districts.county = counties.id
+             and facilities.rtk_enabled = '1'";
+        $res_counties = $this->db->query($sql)->result_array();        
+        $table_data_district = array();
+        $table_data_facilities = array();
+        //$res_district = $this->_districts_in_county($county);
+        
+        $count_counties = count($res_counties);
+        $count = count($res_counties);       
+        for ($i = 0; $i < $count; $i++) {
+            $county_id = $res_counties[$i]['id'];
+            $sql1 = "select count(distinct facilities.id) as facilities, count(distinct districts.id) as districts
+            from  counties,  facilities,  districts where  
+                        facilities.district = districts.id  and facilities.partner = '$partner_id'
+                        and districts.county = counties.id and facilities.rtk_enabled = '1'
+                         and counties.id = '$county_id'";
+            // echo "sql1<br/>";
+            $res = $this->db->query($sql1)->result_array();
+      
+            foreach ($res as $key => $value) {
+                $facilities_count  = $value['facilities'];
+                $district_count  = $value['districts'];
+                array_push($table_data_facilities, $facilities_count);
+                array_push($table_data_district, $district_count);
+            }            
+            
+        }
+
+        $data['counties_list'] = $res_counties;
+        $data['facilities_count'] = $table_data_facilities; 
+        $data['districts_count'] = $table_data_district;        
+        $data['title'] = 'RTK County Admin';
+        $data['banner_text'] = "RTK County Admin: Counties in Aphia Rift Region";
+        $data['content_view'] = "rtk/rtk/partner/districts_v";
+        $this->load->view("rtk/template", $data);        
+    }
     public function partner_commodity_usage() {
         $commodity = $this->session->userdata('commodity_id');          
         if($commodity!=''){
@@ -2517,7 +2573,91 @@ function partner_stock_percentages($partner, $month) {
         return $data;
     }   
 
+public function partner_county_profile($district) {
+        $data = array();
+        $partner_id = $this->session->userdata('partner_id');      
+        $sql_facilities = "select * from facilities, districts,counties 
+        where facilities.district = districts.id and facilities.partner = '$partner_id' 
+        and districts.county = counties.id and counties.id = '$district' ";        
+        $facilities = $this->db->query($sql_facilities)->result_array();        
+      
+        $lastday = date('Y-m-d', strtotime("last day of previous month"));
 
+        $current_month = $this->session->userdata('Month');
+        if ($current_month == '') {
+            $current_month = date('mY', time());
+        }
+
+        $previous_month = date('m', strtotime("last day of previous month"));
+        $previous_month_1 = date('mY', strtotime('-2 month'));
+        $previous_month_2 = date('mY', strtotime('-3 month'));
+
+
+        $year_current = substr($current_month, -4);
+        $year_previous = date('Y', strtotime("last day of previous month"));
+        $year_previous_1 = substr($previous_month_1, -4);
+        $year_previous_2 = substr($previous_month_2, -4);
+
+        $current_month = substr_replace($current_month, "", -4);        
+        $previous_month_1 = substr_replace($previous_month_1, "", -4);
+        $previous_month_2 = substr_replace($previous_month_2, "", -4);
+
+        $monthyear_current = $year_current . '-' . $current_month . '-1';
+        $monthyear_previous = $year_previous . '-' . $previous_month . '-1';
+        $monthyear_previous_1 = $year_previous_1 . '-' . $previous_month_1 . '-1';
+        $monthyear_previous_2 = $year_previous_2 . '-' . $previous_month_2 . '-1';
+
+        $englishdate = date('F, Y', strtotime($monthyear_current));
+
+        $m_c = date("F", strtotime($monthyear_current));
+             
+        $m0 = date("F", strtotime($monthyear_previous));
+        $m1 = date("F", strtotime($monthyear_previous_1));
+        $m2 = date("F", strtotime($monthyear_previous_2));
+
+        $month_text = array($m2, $m1, $m0);
+
+        $district_summary = $this->partner_summary($district, $year_current, $current_month,$partner_id);
+        $district_summary_prev = $this->partner_summary($district, $year_previous, $previous_month,$partner_id);
+        $district_summary1 = $this->partner_summary($district, $year_previous_1, $previous_month_1,$partner_id);
+        $district_summary2 = $this->partner_summary($district, $year_previous_2, $previous_month_2,$partner_id);
+
+
+        $county_id = districts::get_county_id($district);
+        $county_name = counties::get_county_name($district);
+
+       // $cid = $this->db->select('districts.county')->get_where('districts', array('id' =>$district))->result_array();
+
+       //  foreach ($cid as $key => $value) {
+       //     $myres = $cid[0]['county'];
+       // }
+       $sql_counties = "select distinct counties.id,counties.county from facilities, districts,counties 
+        where facilities.district = districts.id and facilities.partner = '$partner_id' and facilities.rtk_enabled='1' 
+        and districts.county = counties.id";          
+       $mycounties = $this->db->query($sql_counties)->result_array();       
+
+       $data['district_balances_current'] = $this->partner_county_totals($year_current, $previous_month, $district);
+       $data['district_balances_previous'] = $this->partner_county_totals($year_previous, $previous_month, $district);
+       $data['district_balances_previous_1'] = $this->partner_county_totals($year_previous_1, $previous_month_1, $district);
+       $data['district_balances_previous_2'] = $this->partner_county_totals($year_previous_2, $previous_month_2, $district);
+
+
+       $data['district_summary'] = $district_summary;
+
+       $data['counties_list'] = $mycounties;
+       $data['facilities']= $facilities;        
+
+       $data['district_name'] = $district_summary['district'];
+       $data['county_id'] = $county_name['id'];
+       $data['county_name'] = $county_name['county'];     
+
+       $data['title'] = 'RTK Partner County Profile: ' . $district_summary['district'];
+       $data['banner_text'] = 'Partner County Profile: ' . $district_summary['district'];
+       $data['content_view'] = "rtk/rtk/partner/partner_profile_v";
+       $data['months'] = $month_text;
+
+       $this->load->view("rtk/template", $data);
+   }
     //Shared Functions
 
             function _allocation($zone = NULL, $county = NULL, $district = NULL, $facility = NULL, $sincedate = NULL, $enddate = NULL) {
@@ -2873,6 +3013,100 @@ public function rtk_summary_county($county, $year, $month) {
             $late_percentage = $reported_percentage;
         }
         $returnable = array('Month' => $text_month, 'Year' => $year, 'district' => $districtname, 'district_id' => $district_id, 'total_facilities' => $total_reporting_facilities, 'reported' => $total_reported_facilities, 'reported_percentage' => $reported_percentage, 'nonreported' => $nonreported, 'nonreported_percentage' => $non_reported_percentage, 'late_reports' => $late_reporting, 'late_reports_percentage' => $late_percentage);
+        return $returnable;
+    }
+
+    public function partner_summary($county, $year, $month,$partner_id) {                
+        $returnable = array();
+        $nonreported;
+        $reported_percentage;
+        $late_percentage;
+
+        // Sets the timezone and date variables for last day of previous month and this month
+        date_default_timezone_set('EUROPE/moscow');
+        $month = $month + 1;
+        $prev_month = $month - 1;
+        $last_day_current_month = date('Y-m-d', mktime(0, 0, 0, $month, 0, $year));
+        $first_day_current_month = date('Y-m-', mktime(0, 0, 0, $month, 0, $year));
+        $first_day_current_month .= '1';
+        $lastday_thismonth = date('Y-m-d', strtotime("last day of this month"));
+        $month -= 1;
+        $day10 = $year . '-' . $month . '-10';
+        $day11 = $year . '-' . $month . '-11';
+        $day12 = $year . '-' . $month . '-12';
+        $late_reporting = 0;
+        $text_month = date('F', strtotime($day10));
+
+        $q = "SELECT * 
+        FROM facilities, districts, counties
+        WHERE facilities.district = districts.id
+        AND districts.county = counties.id
+        and counties.id = '$county'
+        AND facilities.district = districts.id 
+        and facilities.partner = '$partner_id'
+        AND facilities.rtk_enabled =1
+        ORDER BY  `facilities`.`facility_name` ASC ";
+
+        $q_res = $this->db->query($q);
+        $total_reporting_facilities = $q_res->num_rows();        
+        $q = "SELECT DISTINCT lab_commodity_orders.facility_code, lab_commodity_orders.id,lab_commodity_orders.order_date
+        FROM lab_commodity_orders, districts, counties,facilities
+        WHERE districts.id = lab_commodity_orders.district_id
+        AND districts.county = counties.id
+        and counties.id = '$county'
+        AND facilities.district = districts.id 
+        and facilities.partner = '$partner_id'
+        and lab_commodity_orders.facility_code = facilities.facility_code
+        AND lab_commodity_orders.order_date
+        BETWEEN '$first_day_current_month'
+        AND '$last_day_current_month'";       
+        $q_res1 = $this->db->query($q);
+        $total_reported_facilities = $q_res1->num_rows();    
+
+        foreach ($q_res1->result_array() as $vals) {
+            //            echo "<pre>";var_dump($vals);echo "</pre>";
+            if ($vals['order_date'] == $day10 || $vals['order_date'] == $day11 || $vals['order_date'] == $day12) {
+                $late_reporting += 1;
+                //                echo "<pre>";var_dump($vals);echo "</pre>";
+            }
+        }
+
+        $nonreported = $total_reporting_facilities - $total_reported_facilities;
+
+        if ($total_reporting_facilities == 0) {
+            $non_reported_percentage = 0;
+        } else {
+            $non_reported_percentage = $nonreported / $total_reporting_facilities * 100;
+        }
+
+        $non_reported_percentage = number_format($non_reported_percentage, 0);
+
+        if ($total_reporting_facilities == 0) {
+            $reported_percentage = 0;
+        } else {
+            $reported_percentage = $total_reported_facilities / $total_reporting_facilities * 100;
+        }
+
+        $reported_percentage = number_format($reported_percentage, 0);
+
+        if ($total_reporting_facilities == 0) {
+            $late_percentage = 0;
+        } else {
+            $late_percentage = $late_reporting / $total_reporting_facilities * 100;
+        }
+
+
+        $late_percentage = number_format($late_percentage, 0);
+        if ($total_reported_facilities > $total_reporting_facilities) {
+            $reported_percentage = 100;
+            $nonreported = 0;
+            $total_reported_facilities = $total_reporting_facilities;
+        }
+        if ($late_reporting > $total_reporting_facilities) {
+            $late_reporting = $total_reporting_facilities;
+            $late_percentage = $reported_percentage;
+        }
+        $returnable = array('Month' => $text_month, 'Year' => $year,'total_facilities' => $total_reporting_facilities, 'reported' => $total_reported_facilities, 'reported_percentage' => $reported_percentage, 'nonreported' => $nonreported, 'nonreported_percentage' => $non_reported_percentage, 'late_reports' => $late_reporting, 'late_reports_percentage' => $late_percentage);
         return $returnable;
     }
 
@@ -3410,6 +3644,50 @@ $res = $this->db->query($common_q)->result_array();
 
 return $res;
 }
+function partner_county_totals($year, $month, $county = NULL) {
+
+    $firstdate = $year . '-' . $month . '-01';
+    $firstday = date("Y-m-d", strtotime("$firstdate +1 Month "));
+
+    $month = date("m", strtotime("$firstdate +1 Month "));
+    $year = date("Y", strtotime("$firstdate +1 Month "));
+    $num_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+    $lastdate = $year . '-' . $month . '-' . $num_days;
+
+    $returnable = array();
+
+    $common_q = "SELECT lab_commodities.commodity_name,
+    sum(lab_commodity_details.beginning_bal) as sum_opening, 
+    sum(lab_commodity_details.q_received) as sum_received, 
+    sum(lab_commodity_details.q_used) as sum_used, 
+    sum(lab_commodity_details.no_of_tests_done) as sum_tests, 
+    sum(lab_commodity_details.positive_adj) as sum_positive, 
+    sum(lab_commodity_details.negative_adj) as sum_negative,
+    sum(lab_commodity_details.losses) as sum_losses,
+    sum(lab_commodity_details.closing_stock) as sum_closing_bal,
+    sum(lab_commodity_details.q_requested) as sum_requested, 
+    sum(lab_commodity_details.allocated) as sum_allocated,
+    sum(lab_commodity_details.allocated) as sum_days,
+    sum(lab_commodity_details.q_expiring) as sum_expiring
+    FROM lab_commodities, lab_commodity_details, lab_commodity_orders, facilities, districts, counties 
+    WHERE lab_commodity_details.commodity_id = lab_commodities.id 
+    AND lab_commodity_orders.id = lab_commodity_details.order_id 
+    AND facilities.facility_code = lab_commodity_details.facility_code AND facilities.district = districts.id 
+    AND districts.county = counties.id 
+    AND lab_commodity_orders.order_date BETWEEN  '$firstday' AND  '$lastdate'
+    AND lab_commodities.id in (select lab_commodities.id from lab_commodities,lab_commodity_categories 
+        where lab_commodities.category = lab_commodity_categories.id and lab_commodity_categories.active = '1')";
+
+if (isset($county)) {
+    $common_q.= ' AND districts.county = counties.id and counties.id=' . $county;
+}
+
+$common_q.= ' group by lab_commodities.id';
+
+$res = $this->db->query($common_q)->result_array(); 
+
+return $res;
+}
 
 public function rtk_facilities_not_reported($zone = NULL, $county = NULL, $district = NULL, $facility = NULL, $year = NULL, $month = NULL) {
 
@@ -3510,70 +3788,8 @@ function flip_array_diff_key($b, $a) {
     $d = array_diff_key($bt, $at);
     return array_keys($d);
 }
-public function get_district_percentages_month($month=null){
-    if(isset($month)){           
-        $year = substr($month, -4);
-        $month = substr($month, 0,2);            
-        $monthyear = $month.$year;                    
-
-    }
-    $sql = "select id from districts";
-    $result = $this->db->query($sql)->result_array();
-    foreach ($result as $key => $value) {
-        $id = $value['id'];
-        $q = "select 
-        count(facilities.facility_code) as facilities
-        from
-        facilities
-        where
-        facilities.district = $id
-        and facilities.rtk_enabled = 1";               
-        $facilities = $this->db->query($q)->result_array();
-        foreach ($facilities as $key => $value) {
-            $facility_count = $value['facilities'];
-        }            
-        $percentage = $this->rtk_summary_district($id, $year, $month);
-        $reported = $percentage['reported']; 
-        $q = "insert into rtk_district_percentage (district_id, facilities,reported,month) values ($id,$facility_count,$reported,'$monthyear')";
-        $this->db->query($q);
-
-    }             
-
-    
-}
-public function get_county_percentages_month($month=null){
-    if(isset($month)){           
-        $year = substr($month, -4);
-        $month = substr($month, 0,2);            
-        $monthyear = $month.$year;                    
-
-    }
-        //echo "$monthyear";die();
-    for ($i=1; $i < 48; $i++) {             
-        $sql = "select 
-        count(facilities.facility_code) as facilities
-        from
-        facilities,
-        districts,
-        counties
-        where
-        facilities.district = districts.id
-        and districts.county = counties.id
-        and counties.id = $i
-        and facilities.rtk_enabled = 1";
-        $facilities = $this->db->query($sql)->result_array();            
-        foreach ($facilities as $key => $value) {
-            $facility_count = $value['facilities'];
-        }
-        $percentage = $this->rtk_summary_county($i,$year,$month);
-        $reported = $percentage['reported'];           
-
-        $q = "insert into rtk_county_percentage (county_id, facilities,reported,month) values ($i,$facility_count,$reported,'$monthyear')";
-        $this->db->query($q);
 
 
-    }
-}
 function _get_rtk_users() {      
     $q = 'SELECT access_level.level,access_level.user_indicator,
     user.email, user.id AS user_id,user.fname,user.lname,user.email,user.county_id,
@@ -3634,7 +3850,7 @@ public function allocation($zone = NULL, $county = NULL, $district = NULL, $faci
     //////Administration stuff
 
     public function insert_percentage_tables(){
-        $month = date('mY',time());        
+        $month = date('mY', time());           
         $this->get_county_percentages_month($month);
         $this->get_district_percentages_month($month);
     }
@@ -3657,28 +3873,28 @@ public function allocation($zone = NULL, $county = NULL, $district = NULL, $faci
         $monthyear = $month.$year;                    
 
     }
+    
     $sql = "select id from counties";
     $result = $this->db->query($sql)->result_array();
      foreach ($result as $key => $value) {
         $id = $value['id'];               
-        $sql = "select 
-        count(facilities.facility_code) as facilities
-        from
+        $sql = "select count(facilities.facility_code) as facilities     from
         facilities,
         districts,
         counties
         where
         facilities.district = districts.id
         and districts.county = counties.id
-        and counties.id = $i
+        and counties.id = '$id'
         and facilities.rtk_enabled = 1";
         $facilities = $this->db->query($sql)->result_array();            
         foreach ($facilities as $key => $value) {
             $facility_count = $value['facilities'];
         }
-        $percentage = $this->rtk_summary_county($i,$year,$month);
-        $reported = $percentage['reported']; 
-        $q = "insert into rtk_county_percentage (county_id, facilities,reported,month) values ($i,$facility_count,$reported,'$monthyear')";
+        //$percentage = $this->rtk_summary_county($id,$year,$month);        
+        //$reported = $percentage['reported']; 
+        $reported = 0;
+        $q = "insert into rtk_county_percentage (county_id, facilities,reported,month) values ($id,$facility_count,$reported,'$monthyear')";
         $this->db->query($q);
     }
 }
@@ -3693,19 +3909,18 @@ function get_district_percentages_month($month=null){
     $result = $this->db->query($sql)->result_array();
     foreach ($result as $key => $value) {
         $id = $value['id'];
-        $q = "select 
-        count(facilities.facility_code) as facilities
-        from
+        $q = "select count(facilities.facility_code) as facilities from
         facilities
         where
-        facilities.district = $id
-        and facilities.rtk_enabled = 1";               
+        facilities.district = '$id'
+        and facilities.rtk_enabled = '1'";               
         $facilities = $this->db->query($q)->result_array();
         foreach ($facilities as $key => $value) {
             $facility_count = $value['facilities'];
         }            
-        $percentage = $this->rtk_summary_district($id, $year, $month);
-        $reported = $percentage['reported']; 
+        //$percentage = $this->rtk_summary_district($id, $year, $month);
+        $reported = 0;
+        //$reported = $percentage['reported']; 
         $q = "insert into rtk_district_percentage (district_id, facilities,reported,month) values ($id,$facility_count,$reported,'$monthyear')";
         $this->db->query($q);
 
