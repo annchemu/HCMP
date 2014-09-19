@@ -1839,7 +1839,7 @@ public function rtk_manager_stocks($month=null) {
     public function partner_home() {
         $lastday = date('Y-m-d', strtotime("last day of previous month"));
         $countyid = $this->session->userdata('county_id');
-        $partner_id = $this->session->userdata('partner_id');        
+        $partner_id = $this->session->userdata('partner_id');  		
         $districts = districts::getDistrict($countyid);
         $county_name = counties::get_county_name($countyid);
         $County = $county_name[0]['county'];
@@ -1891,7 +1891,7 @@ public function rtk_manager_stocks($month=null) {
         $partner_id = $this->session->userdata('partner_id');                        
         $sql = "select distinct counties.id, counties.county from  counties, facilities, districts where
             facilities.district = districts.id and facilities.partner = '$partner_id'  and districts.county = counties.id
-             and facilities.rtk_enabled = '1'";        
+             and facilities.rtk_enabled = '1'";
         $res_counties = $this->db->query($sql)->result_array();        
         $table_data_district = array();
         $table_data_facilities = array();
@@ -1927,7 +1927,7 @@ public function rtk_manager_stocks($month=null) {
         $this->load->view("rtk/template", $data);        
     }
     public function partner_commodity_usage() {
-        $partner = $this->session->userdata('partner_id');          
+		$partner = $this->session->userdata('partner_id');          
         $commodity = $this->session->userdata('commodity_id');          
         if($commodity!=''){
             $commodity_id = $commodity;
@@ -1968,7 +1968,7 @@ public function rtk_manager_stocks($month=null) {
         $monthyear = $year . '-' . $month . '-1';
         $englishdate = date('F, Y', strtotime($monthyear));
         $data['graphdata'] = $this->partner_commodity_percentages($partner, $commodity_id, $month);
-        //echo "<pre>"; print_r($data['graphdata']);die;
+         // echo "<pre>"; print_r($data['graphdata']);die;
         //$data['county_summary'] = $this->_requested_vs_allocated($year, $month, $countyid);
         $data['tdata'] = $tdata;
         $data['county'] = $County;
@@ -4009,7 +4009,6 @@ function get_district_percentages_month($month=null){
 
     
 }
-
 function update_district_percentages_month($month=null){
     if(isset($month)){           
         $year = substr($month, -4);
