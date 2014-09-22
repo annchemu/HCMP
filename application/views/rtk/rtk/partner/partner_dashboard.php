@@ -144,7 +144,7 @@ $to_date = $my_month[$count-1];
                         }
                     },
                     series: [{
-                            name: '% Reported',
+                            name: '% Reported ',
                             data: <?php echo $graphdata['reported']; ?>
                         }]
                 });
@@ -181,7 +181,7 @@ $to_date = $my_month[$count-1];
                         }
                     },
                     series: [{
-                            name: 'Not reported',
+                            name: 'Not reported (Click on each indicator to filter)',
                             data: <?php echo $graphdata['nonreported_value']; ?>
                         }, {
                             name: 'Reported',

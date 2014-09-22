@@ -2533,17 +2533,43 @@ function partner_stock_percentages($partner, $month) {
  function partner_stock_level_percentages($partner) {   
     
         
-        $q = "select 
-                extract(YEAR_MONTH from lab_commodity_details.created_at) as current_month,
+        // $q = "select 
+        //         extract(YEAR_MONTH from lab_commodity_details.created_at) as current_month,
+        //         lab_commodity_details.commodity_id,
+        //         lab_commodity_details.q_requested,
+        //         lab_commodity_details.beginning_bal,
+        //         lab_commodity_details.q_received,
+        //         lab_commodity_details.no_of_tests_done,
+        //         lab_commodity_details.losses,
+        //         lab_commodity_details.closing_stock,
+        //         lab_commodity_details.q_received,
+        //         facilities.partner
+        //     from
+        //         facilities,
+        //         lab_commodity_details,
+        //         lab_commodities
+        //     where
+        //         facilities.partner = '$partner'
+        //             and lab_commodity_details.facility_code = facilities.facility_code
+        //             and lab_commodity_details.commodity_id = lab_commodities.id
+        //             AND lab_commodities.id in (
+        //                 select lab_commodities.id from lab_commodities, lab_commodity_categories where 
+        //                 lab_commodities.category = lab_commodity_categories.id and lab_commodity_categories.active='1'
+        //                 )
+        //     group by extract(YEAR_MONTH from lab_commodity_details.created_at)";
+    $q ="select    
                 lab_commodity_details.commodity_id,
-                lab_commodity_details.q_requested,
-                lab_commodity_details.beginning_bal,
-                lab_commodity_details.q_received,
-                lab_commodity_details.no_of_tests_done,
-                lab_commodity_details.losses,
-                lab_commodity_details.closing_stock,
-                lab_commodity_details.q_received,
-                facilities.partner
+    sum(lab_commodity_details.q_requested) as qty_requested,
+    sum(lab_commodity_details.beginning_bal) as beg_bal,
+    sum(lab_commodity_details.q_received) as qty_received,
+    sum(lab_commodity_details.no_of_tests_done) as test_done,
+    sum(lab_commodity_details.losses) as losses,
+    sum(lab_commodity_details.closing_stock) as closing_stock,
+    sum(lab_commodity_details.q_used) as qty_used,
+    sum(lab_commodity_details.q_expiring) as qty_expiring,
+    sum(lab_commodity_details.days_out_of_stock) as days_out_of_stock,
+    facilities.partner,
+    lab_commodities.commodity_name
             from
                 facilities,
                 lab_commodity_details,
@@ -2552,11 +2578,9 @@ function partner_stock_percentages($partner, $month) {
                 facilities.partner = '$partner'
                     and lab_commodity_details.facility_code = facilities.facility_code
                     and lab_commodity_details.commodity_id = lab_commodities.id
-                    AND lab_commodities.id in (
-                        select lab_commodities.id from lab_commodities, lab_commodity_categories where 
-                        lab_commodities.category = lab_commodity_categories.id and lab_commodity_categories.active='1'
-                        )
-            group by extract(YEAR_MONTH from lab_commodity_details.created_at)";
+                    and lab_commodities.category = '1'
+                    and lab_commodity_details.created_at between '2014-08-01' and '2014-08-30
+            group by lab_commodities.id";
         $query = $this->db->query($q)->result_array();        
        
 
