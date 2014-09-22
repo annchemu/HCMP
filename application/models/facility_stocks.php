@@ -467,11 +467,7 @@ FROM drug_store_issues ds,drug_store_totals dst where expiry_date BETWEEN CURDAT
 		    f_s.current_balance,
 		    c.commodity_code from  facility_stocks f_s 
 				LEFT JOIN  commodities c ON c.id=f_s.commodity_id where facility_code=$facility_code 
-<<<<<<< HEAD
 				 and f_s.current_balance>0 and expiry_date <= NOW() $and AND year(expiry_date)=$year");
-=======
-				 and f_s.current_balance>0 and expiry_date <= NOW() $and AND year(expiry_date)=2014");
->>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 				
 		        return $stocks ;
 	}
@@ -1147,34 +1143,20 @@ $and_data ");
 		
 	}
 		public static function getexpcount($county_id,$district_id){
-<<<<<<< HEAD
 			$year=date(Y);
-=======
->>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 			$and_data =" AND facilities.district=$district_id" ;
 			if ($district_id=='') {
 				$and_data="AND districts.county=$county_id";
 			}
-<<<<<<< HEAD
 			
 				$stocks = Doctrine_Manager::getInstance()->getCurrentConnection()
 			->fetchAll("SELECT facilities.facility_code,facilities.facility_name,districts.district 
-=======
-		
-				$stocks = Doctrine_Manager::getInstance()->getCurrentConnection()
-			->fetchAll("SELECT facilities.facility_code,facilities.facility_name,districts.district,SUM(facility_stocks.current_balance) as total 
->>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 FROM `facility_stocks` 
 INNER JOIN commodities ON facility_stocks.commodity_id=commodities.id 
 INNER JOIN facilities ON facility_stocks.facility_code=facilities.facility_code 
 INNER JOIN districts ON districts.id=facilities.district WHERE expiry_date < NOW( )
-<<<<<<< HEAD
  AND current_balance>0 AND facility_stocks.status IN (1,2)and year(expiry_date)=$year $and_data
   ");
-=======
- AND current_balance>0 AND facility_stocks.status IN (1,2)and year(expiry_date)=2014 $and_data
- group by facilities.facility_code ");
->>>>>>> 870eb5e41068e8512facfd500f438d8a60106606
 			return $stocks ;
 		
 	}
