@@ -1893,6 +1893,11 @@ public function rtk_manager_stocks($month=null) {
             facilities.district = districts.id and facilities.partner = '$partner_id'  and districts.county = counties.id
              and facilities.rtk_enabled = '1'";        
         $res_counties = $this->db->query($sql)->result_array();        
+        $sql2 = "select name from partners where ID='$partner_id' and flag='1'";        
+        $res_partner = $this->db->query($sql2)->result_array(); 
+        foreach ($res_partner as $key => $value) {
+            $partner_name = $value['name'];
+        }
         $table_data_district = array();
         $table_data_facilities = array();
         //$res_district = $this->_districts_in_county($county);
@@ -1922,7 +1927,7 @@ public function rtk_manager_stocks($month=null) {
         $data['facilities_count'] = $table_data_facilities; 
         $data['districts_count'] = $table_data_district;        
         $data['title'] = 'RTK County Admin';
-        $data['banner_text'] = "RTK County Admin: Counties in Aphia Rift Region";
+        $data['banner_text'] = "RTK County Admin: Counties in $partner_name";
         $data['content_view'] = "rtk/rtk/partner/districts_v";
         $this->load->view("rtk/template", $data);        
     }
@@ -2689,7 +2694,8 @@ public function partner_county_profile($district) {
        $data['district_balances_previous'] = $this->partner_county_totals($year_previous, $previous_month, $district);
        $data['district_balances_previous_1'] = $this->partner_county_totals($year_previous_1, $previous_month_1, $district);
        $data['district_balances_previous_2'] = $this->partner_county_totals($year_previous_2, $previous_month_2, $district);
-
+        echo "<pre>";
+        print_r($data['district_balances_current']);die();
 
        $data['district_summary'] = $district_summary;
 
@@ -2744,7 +2750,7 @@ public function partner_county_profile($district) {
 
 
         //Switch Districts
-            public function switch_district($new_dist = null, $switched_as, $month = NULL, $redirect_url = NULL, $newcounty = null, $switched_from = null) {    
+            public function switch_district($new_dist = null, $switched_as, $month = NULL, $redirect_url = NULL, $newcounty = null, $switched_from = null,$partner=null) {    
                 if ($new_dist == 0) {
                     $new_dist = null;
                 }
@@ -2761,6 +2767,9 @@ public function partner_county_profile($district) {
                     $redirect_url = 'home_controller';
                 }           
 
+                if (isset($partner)) {
+                    $partner_id = $partner;                   
+                }
                 if (!isset($newcounty)) {
                     $newcounty = $this->session->userdata('county_id');
                 }
@@ -2783,6 +2792,7 @@ public function partner_county_profile($district) {
                  "district_id" => $new_dist,
                  "drawing_rights" => $this->session->userdata('drawing_rights'),
                  "switched_as" => $switched_as,
+                 "partner_id" => $partner_id,
                  "Month" => $month,
                  'switched_from' => $switched_from);
 
@@ -3065,7 +3075,7 @@ public function rtk_summary_county($county, $year, $month) {
         return $returnable;
     }
 
-    public function partner_summary($county, $year, $month,$partner_id) {                
+   public function partner_summary($county, $year, $month,$partner_id) {                
         $returnable = array();
         $nonreported;
         $reported_percentage;
@@ -3158,7 +3168,6 @@ public function rtk_summary_county($county, $year, $month) {
         $returnable = array('Month' => $text_month, 'Year' => $year,'total_facilities' => $total_reporting_facilities, 'reported' => $total_reported_facilities, 'reported_percentage' => $reported_percentage, 'nonreported' => $nonreported, 'nonreported_percentage' => $non_reported_percentage, 'late_reports' => $late_reporting, 'late_reports_percentage' => $late_percentage);
         return $returnable;
     }
-
     //Logging Function
     public function logData($reference, $object) {
         $timestamp = time();
@@ -3726,6 +3735,7 @@ function partner_county_totals($year, $month, $county = NULL) {
     AND lab_commodity_orders.order_date BETWEEN  '$firstday' AND  '$lastdate'
     AND lab_commodities.id in (select lab_commodities.id from lab_commodities,lab_commodity_categories 
         where lab_commodities.category = lab_commodity_categories.id and lab_commodity_categories.active = '1')";
+echo "$common_q";die();
 
 if (isset($county)) {
     $common_q.= ' AND districts.county = counties.id and counties.id=' . $county;
