@@ -785,7 +785,7 @@ public static function get_county_comparison_data($facility_code=null,$district_
 	  exit;*/
      return $inserttransaction ;
 }
-  public static function get_county_consumption_level_new($facility_code, $district_id,$county_id,$category_id,$commodity_id, $option,$from,$to,$graph_type=null){
+  public static function get_county_consumption_level_new($facility_code, $district_id,$county_id,$category_id,$commodity_id, $option,$from,$to,$graph_type=null,$tracer = null){
   	 $selection_for_a_month =((!isset($facility_code) || $facility_code=="ALL") && ($district_id)>0) || $category_id>0 ? " f.facility_name as name," :
   	 (($commodity_id=="ALL") && isset($facility_code) ? " d.commodity_name as name,": 
 	 ((isset($county_id) && $district_id=="ALL")? " di.district as name," : 
@@ -824,7 +824,7 @@ public static function get_county_comparison_data($facility_code=null,$district_
 	 $and_data .=(isset($district_id)&& ($district_id>0)) ?"AND di.id = '$district_id'" : null;
 	 $and_data .=(isset($facility_code)&& ($facility_code>0)) ?" AND f.facility_code = '$facility_code'" : null;
      $and_data .=($county_id>0) ?" AND di.county='$county_id'" : null;
-	 
+	 $and = (isset($tracer)&&($tracer>0))?" AND d.tracer_item = 1":null;
      $group_by_a_month=(isset($facility_code) && isset($district_id)) || isset($category_id)? " GROUP BY fs.commodity_id having total>0" :(  
 	 ($district_id>0 && !isset($facility_code)) ?  " GROUP BY f.facility_code having total>0": " GROUP BY d.id having total>0") ;
 	 
@@ -833,24 +833,85 @@ public static function get_county_comparison_data($facility_code=null,$district_
 	 (isset($county_id) && $district_id=="ALL")? " GROUP BY d.id having total>0" :  (($graph_type=='table_data')&& ($commodity_id>0) ?" GROUP BY d.id, f.facility_code having total>0 order by di.district asc, f.facility_name asc" :
 	 1);
 	 
-	 if($group_by_a_month==1){
+	 if($group_by_a_month==1)
+	 {
      $group_by_a_month=$date_diff<=30? "GROUP BY DATE_FORMAT(fs.date_issued,'%d %b %y')": " GROUP BY DATE_FORMAT(fs.date_issued,'%b %y')" ;	
-	 }else{}
-    
+	 }elseif($tracer=1){
+	 	$group_by_a_month=$date_diff<=30? "GROUP BY commodity":$group_by_a_month;	
+	 
+	 }
+    $group_by_a_month = (isset($tracer)&&($group_by_a_month))?" GROUP BY commodity":$group_by_a_month;
+     
 	$inserttransaction = Doctrine_Manager::getInstance()->getCurrentConnection()
     ->fetchAll("SELECT  $selection_for_a_month $computation
     FROM facility_issues fs, facilities f, commodities d, districts di
     WHERE fs.facility_code = f.facility_code
     AND f.district = di.id
     AND fs.qty_issued >0
+    $and 
     AND d.id = fs.commodity_id
     $and_data
     $group_by_a_month
      ");		
-	
+	/*echo "SELECT  $selection_for_a_month $computation
+    FROM facility_issues fs, facilities f, commodities d, districts di
+    WHERE fs.facility_code = f.facility_code
+    AND f.district = di.id
+    AND fs.qty_issued >0
+    $and 
+    AND d.id = fs.commodity_id
+    $and_data
+    $group_by_a_month";exit;*/
 	
      return $inserttransaction ;
   }     
+public static function get_sub_county_cost_of_exipries($facility_code=null,$district_id=null,$county_id,$year=null,$month=null,$option=null,$data_for=null)
+ {
+ 	switch ($option) :
+         case 'ksh':
+           $computation ="ifnull((SUM(ROUND(fs.current_balance/ d.total_commodity_units)))*d.unit_cost ,0) AS total,d.commodity_name as name";
+             break;
+         case 'units':
+           $computation =" ifnull(CEIL(SUM(fs.current_balance)),0) AS total" ;
+             break;
+             case 'packs':
+           $computation =" ifnull(SUM(ROUND(fs.current_balance/d.total_commodity_units)),0) AS total" ;
+             break;
+         default:
+      $computation ="ifnull(SUM(ROUND(fs.current_balance/d.total_commodity_units)),0) AS total";
+          break;
+     endswitch;		
+ 	 $selection_for_a_month = isset($facility_code) && isset($district_id)? " d.commodity_name as name," :( 
+	 isset($district_id) && !isset($facility_code) ? " f.facility_name as name,": " di.district as name,") ;
+	 
+	 $select_option = ($data_for=='all') ?"date_format( fs.expiry_date, '%b' ) as cal_month," : $selection_for_a_month;
+	 $and_data =($district_id>0) ?" AND di.id = '$district_id'" : null;
+	 $and_data .=($facility_code>0) ?" AND f.facility_code = '$facility_code'" : null;
+	 $and_data .=($county_id>0) ?" AND c.id='$county_id'" : null;
+	 //$and_data .=($month>0) ? " AND date_format( fs.expiry_date, '%m')=$month"  : null;
+	 $and_data .=($year>0) ? " AND DATE_FORMAT( fs.expiry_date,'%Y') =$year"  : null;  	 
+	 $group_by_a_month=isset($facility_code) && isset($district_id)? " GROUP BY fs.commodity_id having total>0" :
+	 (isset($district_id) && !isset($facility_code) ?  " GROUP BY f.facility_code having total>0": 
+	 " GROUP BY d.id having total>0") ;
+	 $group_by =($data_for=='all') ?"GROUP BY month(expiry_date) asc":$group_by_a_month;
+     	 
+		 
+	 //exit;
+	$inserttransaction = Doctrine_Manager::getInstance()->getCurrentConnection()
+     ->fetchAll("SELECT d.commodity_name,  f.facility_name, di.district, $select_option  date_format(expiry_date,'%M') AS month, $computation  
+     FROM facility_stocks fs, facilities f, commodities d, counties c, districts di
+     WHERE fs.facility_code = f.facility_code
+     AND fs.`expiry_date` <= NOW( )
+     AND f.district =di.id
+     AND di.county=c.id
+     AND d.id = fs.commodity_id
+     $and_data
+     $group_by
+     ");
+	
+	 
+ 	return  $inserttransaction ;
+}
     	public static function get_county_expiries($county_id,$year,$district_id=null,$facility_code=null){
 	 $and_data =(isset($district_id)&& ($district_id>0)) ?"AND d1.id = '$district_id'" : null;
 	 $and_data .=(isset($facility_code)&& ($facility_code>0)) ?" AND f.facility_code = '$facility_code'" : null;
