@@ -3220,7 +3220,7 @@ function generate_lastpdf($id) {
                     $amcs[$fcode] = $amc_details;
                 }
 
-                $data['title'] = 'Zone A List';
+                $data['title'] = 'Zone b List';
                 $data['banner_text'] = 'Facilities in Zone A';
                 $data['content_view'] = 'rtk/allocation_committee/zone_a';        
                 $data['facilities'] = $facilities;

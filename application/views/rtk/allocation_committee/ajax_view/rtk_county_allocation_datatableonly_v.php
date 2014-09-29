@@ -15,7 +15,7 @@
             "bPaginate": false,
         });
 
-        $("#allocate").button().click(function() {
+        $("#allocated").button().click(function() {
 
         	var loading = '<div id="loading"> &nbsp;&nbsp;<img src="<?php echo base_url(); ?>assets/img/ajax-loader.gif"><span style="font-size: 13px;color: #92CA8F;margin-left:100px; font-family: calibri;">Saving Allocations</span></div>';
         	$('#allocation-response').html(loading);

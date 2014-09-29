@@ -4688,7 +4688,7 @@ WHERE
             $fcode = $value['facility_code'];
             $amc1 = $this->_facility_amc($value['facility_code'], 1);
             $amc2 = $this->_facility_amc($value['facility_code'], 2);
-            $amc3 = $this->_facility_amc($value['facility_code'], 3);
+            $amc3 = $this->_facility_amc($value['facility_code'], 4);
             $amc5 = $this->_facility_amc($value['facility_code'], 5);
             $amc6 = $this->_facility_amc($value['facility_code'], 6);
 

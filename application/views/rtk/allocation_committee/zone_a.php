@@ -1,10 +1,3 @@
-<link rel="stylesheet" type="text/css" href="http://tableclothjs.com/assets/css/tablecloth.css">
-<script src="http://tableclothjs.com/assets/js/jquery.tablesorter.js"></script>
-<script src="http://tableclothjs.com/assets/js/jquery.metadata.js"></script>
-<script src="http://tableclothjs.com/assets/js/jquery.tablecloth.js"></script>
-
-
-
 <style>
 
 .dataTables_filter{
@@ -49,32 +42,32 @@ table{
   <table id="pending_facilities" class="data-table"> 
     <thead>
     <tr>        
-      <th>County</th>
-      <th>Sub-County</th>
-      <th>MFL</th>
-      <th>Facility Name</th>      
-      <th colspan="2">Screening - Determine</th>    
-      <th colspan="2">Confirmatory - Unigold</th>      
-      <th colspan="2">First Response</th>      
-      <th colspan="2">Colloidal</th>      
-      <th colspan="2">TieBreaker - Unigold</th>      
+      <th align="center">County</th>
+      <th align="center">Sub-County</th>
+      <th align="center">MFL</th>
+      <th align="center">Facility Name</th>      
+      <th align="center" colspan="2">Screening - Determine</th>    
+      <th align="center" colspan="2">Confirmatory - Unigold</th>      
+      <th align="center" colspan="2">First Response</th>      
+      <th align="center" colspan="2">Colloidal</th>      
+      <th align="center" colspan="2">TieBreaker - Unigold</th>      
     </tr>    
     <tr>
           
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>      
-      <th>AMC</th>
-      <th>Quantity to Allocate</th>
-      <th>AMC</th>
-      <th>Quantity to Allocate</th>
-      <th>AMC</th>
-      <th>Quantity to Allocate</th>
-      <th>AMC</th>
-      <th>Quantity to Allocate</th>
-      <th>AMC</th>
-      <th>Quantity to Allocate</th>
+      <th align="center"></th>
+      <th align="center"></th>
+      <th align="center"></th>
+      <th align="center"></th>      
+      <th align="center">AMC</th>
+      <th align="center">Quantity to Allocate</th>
+      <th align="center">AMC</th>
+      <th align="center">Quantity to Allocate</th>
+      <th align="center">AMC</th>
+      <th align="center">Quantity to Allocate</th>
+      <th align="center">AMC</th>
+      <th align="center">Quantity to Allocate</th>
+      <th align="center">AMC</th>
+      <th align="center">Quantity to Allocate</th>
     </tr>
       
     </thead>
@@ -87,20 +80,20 @@ table{
         $facil = $value['facility_code'];
         ?> 
         <tr>   
-          <td><?php echo $value['county'];?></td>
-          <td><?php echo $value['district'];?></td>              
-          <td><?php echo $value['facility_code'];?></td>
-          <td><?php echo $value['facility_name'];?></td>     
-          <td><?php echo $amcs[$facil][0]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][0]['amc'])*4)/100);?></td>     
-          <td><?php echo $amcs[$facil][1]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][1]['amc'])*4)/20);?></td>                 
-          <td><?php echo $amcs[$facil][3]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][3]['amc'])*4)/50);?></td>     
-          <td><?php echo $amcs[$facil][2]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][2]['amc'])*4)/30);?></td>     
-          <td><?php echo $amcs[$facil][4]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][4]['amc'])*4)/20);?></td>     
+          <td align="center"><?php echo $value['county'];?></td>
+          <td align="center"><?php echo $value['district'];?></td>              
+          <td align="center"><?php echo $value['facility_code'];?></td>
+          <td align="center"><?php echo $value['facility_name'];?></td>     
+          <td align="center"><?php echo $amcs[$facil][0]['amc'];?></td>     
+          <td align="center"><?php if ($amcs[$facil][0]['amc'] <=0){echo 1;}else{ echo ceil((($amcs[$facil][0]['amc'])*4)/100);}?></td> 
+          <td align="center"><?php echo $amcs[$facil][1]['amc'];?></td>     
+          <td align="center"><?php if ($amcs[$facil][1]['amc'] <=0){echo 1;}else{ echo ceil((($amcs[$facil][1]['amc'])*4)/20);}?></td>
+          <td align="center"><?php echo $amcs[$facil][3]['amc'];?></td>     
+          <td align="center"><?php if ($amcs[$facil][3]['amc'] <=0){echo 1;}else{ echo ceil((($amcs[$facil][3]['amc'])*4)/50);}?></td>
+          <td align="center"><?php echo $amcs[$facil][2]['amc'];?></td>     
+          <td align="center"><?php if ($amcs[$facil][2]['amc'] <=0){echo 1;}else{ echo ceil((($amcs[$facil][2]['amc'])*4)/30);}?></td> 
+          <td align="center"><?php echo $amcs[$facil][4]['amc'];?></td>     
+          <td align="center"><?php if ($amcs[$facil][4]['amc'] <=0){echo 1;}else{ echo ceil((($amcs[$facil][4]['amc'])*4)/20);}?></td>     
           
         </tr>
         <?php }
@@ -172,4 +165,9 @@ $(document).ready(function() {
 <link href="../../assets/datatable/TableTools.css" type="text/css" rel="stylesheet"/>
 <link href="../../assets/datatable/dataTables.bootstrap.css" type="text/css" rel="stylesheet"/>
 
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/tablecloth/assets/css/tablecloth.css">
 
+
+<script src="http://tableclothjs.com/assets/js/jquery.tablesorter.js"></script>
+<script src="http://tableclothjs.com/assets/js/jquery.metadata.js"></script>
+<script src="http://tableclothjs.com/assets/js/jquery.tablecloth.js"></script>
