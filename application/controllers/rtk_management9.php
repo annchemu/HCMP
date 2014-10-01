@@ -1458,7 +1458,7 @@ class Rtk_Management extends Home_controller {
         } else {
             $q.=" AND lab_commodity_details.commodity_id = 1";
         }
-
+echo $q; die;
         $res = $this->db->query($q);
         $result = $res->result_array();
         $result = $result[0]['avg_used'];

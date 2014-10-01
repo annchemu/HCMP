@@ -3311,34 +3311,44 @@ public function rtk_summary_county($county, $year, $month) {
     }
 
     //Update the Average Monthly Consumption
-    private function update_amc($mfl) {
+   private function update_amc($mfl) {
         $last_update = time();
         $amc = 0;
         for ($commodity_id = 1; $commodity_id <= 6; $commodity_id++) {
             $amc = $this->_facility_amc($mfl, $commodity_id);
-            $sql = "update facility_amc set amc = '$amc', last_update = '$last_update' where facility_code = '$mfl' and commodity_id='$commodity_id'";
-            $res = $this->db->query($sql);
+            $q = "select * from facility_amc where facility_code='$mfl' and commodity_id='$commodity_id'";
+            $resq = $this->db->query($q)->result_array();
+            $count = count($resq);
+            if($count>0){
+                $sql = "update facility_amc set amc = '$amc', last_update = '$last_update' where facility_code = '$mfl' and commodity_id='$commodity_id'";
+                $res = $this->db->query($sql); 
+            }else{
+
+                $sql = "INSERT INTO `facility_amc`(`facility_code`, `commodity_id`, `amc`, `last_update`) 
+                VALUES ('$mfl','$commodity_id','$amc','$last_update')";
+                $res = $this->db->query($sql);
+            }
+            
         }
     }
 
-
     //Facility Amc
     public function _facility_amc($mfl_code, $commodity = null) {
-        $three_months_ago = date("Y-m-", strtotime("-3 Month "));
+        $three_months_ago = date("Y-m-", strtotime("-4 Month "));
         $three_months_ago .='1';
         $end_date = date("Y-m-", strtotime("-1 Month "));
         $end_date .='31';
         //echo "Three months ago = $three_months_ago and End Date =$end_date ";die();
-        $q = "SELECT avg(lab_commodity_details.q_used) as avg_used
-        FROM  lab_commodity_details,lab_commodity_orders
-        WHERE lab_commodity_orders.id =  lab_commodity_details.order_id
-        AND lab_commodity_details.facility_code =  $mfl_code
+        $q = "SELECT avg(lab_commodity_details1.q_used) as avg_used
+        FROM  lab_commodity_details1,lab_commodity_orders
+        WHERE lab_commodity_orders.id =  lab_commodity_details1.order_id
+        AND lab_commodity_details1.facility_code =  $mfl_code
         AND lab_commodity_orders.order_date BETWEEN '$three_months_ago' AND '$end_date'";
         
         if (isset($commodity)) {
-            $q.=" AND lab_commodity_details.commodity_id = $commodity";
+            $q.=" AND lab_commodity_details1.commodity_id = $commodity";
         } else {
-            $q.=" AND lab_commodity_details.commodity_id = 1";
+            $q.=" AND lab_commodity_details1.commodity_id = 1";
         }
 
         $res = $this->db->query($q);
@@ -3348,7 +3358,15 @@ public function rtk_summary_county($county, $year, $month) {
         return $result;
     }
 
-
+function facility_amc_compute() {
+        $sql = "select facilities.facility_code from facilities where facilities.rtk_enabled = '1'";
+        $res = $this->db->query($sql);
+        $facility = $res->result_array();
+        foreach ($facility as $value) {
+            $fcode = $value['facility_code'];
+            $this->update_amc($fcode);
+        }
+    }
     //Update the Number of Reports Online
     function _update_reports_count($state,$county,$district){ 
         $month = date('mY',time());             
@@ -4500,24 +4518,26 @@ function _national_reports_sum($year, $month) {
       }
 
 public function get_all_zone_a_facilities(){
-                $sql = "select facilities.*,districts.district,counties.county from facilities,counties,districts 
+                $sql = "select distinct facilities.*,districts.district,counties.county, user.lname, user.fname, user.telephone from facilities,counties,districts, user 
                 where facilities.zone = 'Zone B' 
                 and facilities.rtk_enabled=1
                 and districts.id = facilities.district
                 and counties.id=districts.county";
                 $res = $this->db->query($sql);
-                $facilities = $res->result_array(); 
+                $facilities = $res->result_array();
                 $amcs = array();
                 foreach ($facilities as $key => $value) {
                     $fcode = $value['facility_code'];
-                    $q = "select lab_commodities.*, facility_amc.* from lab_commodities, facility_amc 
+                    $q = "select distinct lab_commodities.*, facility_amc.* from lab_commodities, facility_amc 
                     where lab_commodities.id = facility_amc.commodity_id and facility_amc.facility_code=$fcode";
                     $res1 = $this->db->query($q);
                     $amc_details = $res1->result_array();
                     $amcs[$fcode] = $amc_details;
+                // echo "<pre>"; echo($q); die;
+
                 }
 
-                $data['title'] = 'Zone b List';
+                $data['title'] = 'Zone B List';
                 $data['banner_text'] = 'Facilities in Zone B';
                 $data['content_view'] = 'rtk/allocation_committee/zone_a';        
                 $data['facilities'] = $facilities;
@@ -4525,6 +4545,114 @@ public function get_all_zone_a_facilities(){
                 $this->load->view('rtk/template', $data);        
 
             }
+            public function non_reported_facilities(){
+                $month =  date("mY", time());
+
+                $one_months_ago = date("Y-m-", strtotime("-1 Month "));
+                $two_months_ago = date("Y-m-", strtotime("-2 Month "));
+                $three_months_ago = date("Y-m-", strtotime("-3 Month "));
+                $four_months_ago = date("Y-m-", strtotime("-4 Month "));
+
+                $four_months_ago .='1';
+                $end_date = date("Y-m-", strtotime("-1 Month "));
+                $end_date .='31';
+
+                // $firstday = '2014-06-01';
+                // $lastday = '2014-09-30';        
+      // ini_set('memory_limit', '750M');
+                $sql = "select distinct
+                            facilities.facility_code,
+                            lab_commodity_orders.order_date,
+                            facilities.facility_name,
+                            facilities.zone,
+                            districts.district,
+                            counties.county
+                        from
+                            facilities,
+                            counties,
+                            districts,
+                            lab_commodity_orders
+                        where
+                        lab_commodity_orders.order_date between '2014-06-01' and '2014-09-30'
+                        and 
+                            facilities.rtk_enabled = 1
+                                and districts.id = facilities.district
+                                and counties.id = districts.county
+                                and facilities.facility_code not in (select distinct
+                                    facilities.facility_code
+                                from
+                                    facilities,
+                                    lab_commodity_orders
+                                where
+                                    lab_commodity_orders.order_date between '2014-06-01' and '2014-09-30'
+                                        and facilities.facility_code = lab_commodity_orders.facility_code
+                                )
+                        group by facilities.facility_code,extract(YEAR_MONTH from lab_commodity_orders.order_date) limit 0,5";
+                                                 // echo $sql; die;
+                $res = $this->db->query($sql);
+                echo "<pre>";
+                print_r($res->result_array());die();
+                $facilities = $res->result_array(); 
+
+                foreach ($facilities as $key => $value) {
+                    $fcode = $value['facility_code'];
+                    $q = "select distinct
+                            facilities.facility_code,
+                            lab_commodity_orders.order_date,
+                            facilities.facility_name,
+                            facilities.zone,
+                            districts.district,
+                            counties.county
+                        from
+                            facilities,
+                            counties,
+                            districts,
+                            lab_commodity_orders
+                        where
+                        lab_commodity_orders.order_date between '2014-06-01' and '2014-09-30'
+                        and 
+                            facilities.rtk_enabled = 1
+                            and 
+                            facilities.facility_code = '$fcode'
+                                and districts.id = facilities.district
+                                and counties.id = districts.county
+                                and facilities.facility_code not in (select distinct
+                                    facilities.facility_code
+                                from
+                                    facilities,
+                                    lab_commodity_orders
+                                where
+                                    lab_commodity_orders.order_date between '2014-06-01' and '2014-09-30'
+                                        and facilities.facility_code = lab_commodity_orders.facility_code
+                                )
+                        group by facilities.facility_code,extract(YEAR_MONTH from lab_commodity_orders.order_date) limit 0,5";
+                    $res1 = $this->db->query($q)->result_array();  
+                    $orders = array();
+                    foreach ($res1 as $keys => $values) {
+                        $order_date = $values['order_date'];
+                        array_push($orders, $order_date);
+                    }
+
+                    $dates[$fcode] = array(
+                        'county'=> $value['county'],
+                        'subcounty'=> $value['district'],
+                        'zone'=> $value['zone'],
+                        'fcode'=> $value['facility_code'],
+                        'name'=> $value['facility_name'],
+                        'dates'=> $orders
+                        );
+                    // echo "<pre>";
+                    // print_r($dates);
+                    // die;
+                }
+                    
+                $data['title'] = 'Unreported Facilities ';
+                $data['banner_text'] = 'Facilities not Reported between June and September';
+                $data['content_view'] = 'rtk/allocation_committee/allocation_non_reported';        
+                $data['facilities'] = $facilities;
+                $data['orderdate'] = $dates;
+                $this->load->view('rtk/template', $data);   
+                }
 }
 
 ?>

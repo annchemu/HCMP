@@ -54,7 +54,7 @@ table{
 
 <div class="main-container" style="width: 100%;float: right;">
 
-  <table id="pending_facilities" class="data-table"> 
+  <table id="pending_facilities" class="data-table" width="80%"> 
   
     <thead>
     <tr>        
@@ -62,12 +62,11 @@ table{
       <th>Sub-County</th>
       <th>MFL</th>
       <th>Facility Name</th>  
-      <th>Zone</th>      
-      <th colspan="2">Screening - Determine</th>    
-      <th colspan="2">Confirmatory - Unigold</th>      
-      <th colspan="2">First Response</th>      
-      <th colspan="2">Colloidal</th>      
-      <th colspan="2">TieBreaker - Unigold</th>      
+      <th>Zone</th>          
+      <th>June</th>          
+      <th>July</th>          
+      <th>August</th>          
+      <th>September</th>          
     </tr>    
     
       
@@ -75,27 +74,55 @@ table{
 
     <tbody>
       <?php
-      if(count($facilities)>0){
-       foreach ($facilities as $value) {
+         // echo "<pre>";
+         //            print_r($orderdate);
+         //            die;
+      if(count($orderdate)>0){
+       foreach ($orderdate as $key =>$value) {
         //$zone = str_replace(' ', '-',$value['zone']);
-        $facil = $value['facility_code'];
+        $facil = $value['fcode'];
+        $name = $value['name'];
+        $date1 = $value['dates'][0];        
+        $date2 = $value['dates'][1];
+        $date3 = $value['dates'][2];
+        $date4 = $value['dates'][3];
         ?> 
         <tr>   
           <td><?php echo $value['county'];?></td>
-          <td><?php echo $value['district'];?></td>              
-          <td><?php echo $value['facility_code'];?></td>
-          <td><?php echo $value['facility_name'];?></td> 
-          <td><?php echo $value['zone'];?></td>     
-          <td><?php echo $amcs[$facil][0]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][0]['amc'])*4)/100);?></td>     
-          <td><?php echo $amcs[$facil][1]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][1]['amc'])*4)/20);?></td>                 
-          <td><?php echo $amcs[$facil][3]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][3]['amc'])*4)/50);?></td>     
-          <td><?php echo $amcs[$facil][2]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][2]['amc'])*4)/30);?></td>     
-          <td><?php echo $amcs[$facil][4]['amc'];?></td>     
-          <td><?php echo ceil((($amcs[$facil][4]['amc'])*4)/20);?></td>     
+          <td><?php echo $value['subcounty'];?></td>              
+          <td><?php echo $facil;?></td>
+          <td><?php echo $name;?></td>   
+          <td><?php echo $value['zone'];?></td>              
+          <td><?php 
+            if($date1 >= '2014-06-01' && $date1 <= '2014-06-31'){
+                echo "Y";
+              }else
+              {
+                echo "N";
+              }
+            ?></td> 
+          <td><?php 
+            if($date2 >= '2014-07-01' && $date2 <= '2014-07-31'){
+                echo "Y";
+              }else
+              {
+                echo "N";
+              }
+            ?></td> <td><?php 
+            if($date3 >= '2014-08-01' && $date3 <= '2014-08-31'){
+                echo "Y";
+              }else
+              {
+                echo "N";
+              }
+            ?></td> <td><?php 
+            if($date4 >= '2014-09-01' && $date4 <= '2014-09-31'){
+                echo "Y";
+              }else
+              {
+                echo "N";
+              }
+            ?></td> 
           
         </tr>
         <?php }
