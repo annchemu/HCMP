@@ -4686,32 +4686,35 @@ WHERE
         foreach ($facility as $value) {
             $time = time();
             $fcode = $value['facility_code'];
-            $amc1 = $this->_facility_amc($value['facility_code'], 1);
-            $amc2 = $this->_facility_amc($value['facility_code'], 2);
-            $amc3 = $this->_facility_amc($value['facility_code'], 3);
-            $amc5 = $this->_facility_amc($value['facility_code'], 5);
-            $amc6 = $this->_facility_amc($value['facility_code'], 6);
+            // $amc1 = $this->_facility_amc($value['facility_code'], 1);
+            // $amc2 = $this->_facility_amc($value['facility_code'], 2);
+            // $amc3 = $this->_facility_amc($value['facility_code'], 3);
+            $amc4 = $this->_facility_amc($value['facility_code'], 4);
+            // $amc5 = $this->_facility_amc($value['facility_code'], 5);
+            // $amc6 = $this->_facility_amc($value['facility_code'], 6);
 
-            $insert1 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '1', '$amc1', '$time');";
-            $insert2 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '2', '$amc2', '$time');";
-            $insert3 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '3', '$amc3', '$time');";
-            $insert5 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '5', '$amc5', '$time');";
-            $insert6 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '6', '$amc6', '$time');";
+            // $insert1 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '1', '$amc1', '$time');";
+            // $insert2 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '2', '$amc2', '$time');";
+            // $insert3 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '3', '$amc3', '$time');";
+            // $insert5 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '5', '$amc5', '$time');";
+            // $insert6 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '6', '$amc6', '$time');";
+             $insert4 = "INSERT INTO facility_amc (`id`, `facility_code`, `commodity_id`, `amc`, `last_update`)VALUES (NULL, '$fcode', '4', '$amc4', '$time');";
             
-              $this->db->query($insert1);
-              $this->db->query($insert2);
-              $this->db->query($insert3);
-              $this->db->query($insert5);
+              // $this->db->query($insert1);
+              // $this->db->query($insert2);
+              // $this->db->query($insert3);
+              // $this->db->query($insert5);
+              // $this->db->query($insert6);
               $this->db->query($insert6);
             
 
-            echo '<pre>';
-            echo $insert1;
-            echo $insert2;
-            echo $insert3;
-            echo $insert5;
-            echo $insert6;
-            echo '<br/></pre>';
+            // echo '<pre>';
+            // echo $insert1;
+            // echo $insert2;
+            // echo $insert3;
+            // echo $insert5;
+            // echo $insert6;
+            // echo '<br/></pre>';
         }
     }
 

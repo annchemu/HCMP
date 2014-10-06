@@ -1133,12 +1133,12 @@ AND district =' . $district . '');
     }
 
     public function sync_nascop($month = null, $year = null) {
-        $url = 'http://nascop.org/cd4/reportingfacsummary.php?yr=' . $year . '&month=' . $month;
+        $url = 'http://nascop.org/cd4/reportingfacsummary.php?year=' . $year . '&month=' . $month;
         if (!$this->_check_url_working($url)) {
             echo ("NASCOP link is down");
             die;
         }
-        $sql = 'select count(id) as count from `api_gens` where month=' . $month . ' AND year =' . $year;
+        $sql = 'select count(id) as count from `api_gen` where month=' . $month . ' AND year =' . $year;
         $result = $this->db->query($sql);
         $id = $result->result_array();
         $num_rows = $id[0]['count'];

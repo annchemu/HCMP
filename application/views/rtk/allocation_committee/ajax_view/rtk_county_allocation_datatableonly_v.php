@@ -118,7 +118,7 @@
                 <th colspan="5">Quantity(tests)</th>
               
                 <th rowspan="2"><b>Qty to allocate</b>(Kits)</th>
-                <th rowspan="2"><b>Qty Issued<br />(From KEMSA)</b></th>
+                <!--th rowspan="2"><b>Qty Issued<br />(From KEMSA)</b></th-->
                 <th rowspan="2"><b>Status</b></th>
             </tr>
             <tr>

@@ -51,8 +51,7 @@ class Home extends MY_Controller
 	public function index() {	
 		(!$this -> session -> userdata('user_id')) ? redirect('user'): null ;	
 
-		$identifier = $this -> session -> userdata('user_indicator');
-		
+		$identifier = $this -> session -> userdata('user_indicator');		
         switch ($identifier):
 			case 'moh':
 			$view = 'shared_files/template/dashboard_template_v';	
@@ -75,6 +74,7 @@ class Home extends MY_Controller
 			case 'allocation_committee':
 			case 'rtk_manager':
 			case 'rtk_partner_admin':
+			case 'rtk_partner_super':
 			redirect('home_controller');
 			break;
 			case 'super_admin':
