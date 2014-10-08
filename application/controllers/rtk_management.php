@@ -407,7 +407,52 @@ public function update_lab_commodity_orders() {
     }
 
     redirect('rtk_management/scmlt_orders');
+}public function rtk_orders($msg = NULL) {
+    $district = $this->session->userdata('district_id');        
+    $district_name = Districts::get_district_name($district)->toArray();        
+    $d_name = $district_name[0]['district'];
+    $countyid = $this->session->userdata('county_id');
+
+    $data['countyid'] = $countyid;
+
+    $data['title'] = "Orders";
+    $data['content_view'] = "rtk/rtk/dpp/rtk_orders_listing_v";
+    $data['banner_text'] = $d_name . "Orders";
+        //        $data['fcdrr_order_list'] = Lab_Commodity_Orders::get_district_orders($district);
+    ini_set('memory_limit', '-1');
+
+    date_default_timezone_set('EUROPE/moscow');
+    $last_month = date('m');
+        //            $month_ago=date('Y-'.$last_month.'-d');
+    $month_ago = date('Y-m-d', strtotime("last day of previous month"));
+    $sql = 'SELECT  
+    facilities.facility_code,facilities.facility_name,lab_commodity_orders.id,lab_commodity_orders.order_date,lab_commodity_orders.district_id,lab_commodity_orders.compiled_by,lab_commodity_orders.facility_code
+    FROM lab_commodity_orders, facilities
+    WHERE lab_commodity_orders.facility_code = facilities.facility_code 
+    AND lab_commodity_orders.order_date between ' . $month_ago . ' AND NOW()
+    AND facilities.district =' . $district . '
+    ORDER BY  lab_commodity_orders.id DESC ';
+           /*$query = $this->db->query("SELECT  
+            facilities.facility_code,facilities.facility_name,lab_commodity_orders.id,lab_commodity_orders.order_date,lab_commodity_orders.district_id,lab_commodity_orders.compiled_by,lab_commodity_orders.facility_code
+            FROM lab_commodity_orders, facilities
+            WHERE lab_commodity_orders.facility_code = facilities.facility_code 
+            AND lab_commodity_orders.order_date between '$month_ago ' AND NOW()
+            AND lab_commodity_orders.district_id =' . $district . '
+            ORDER BY  lab_commodity_orders.id DESC");*/
+$query = $this->db->query($sql);
+
+$data['lab_order_list'] = $query->result_array();
+$data['all_orders'] = Lab_Commodity_Orders::get_district_orders($district);
+$myobj = Doctrine::getTable('districts')->find($district);
+        //$data['district_incharge']=array($id=>$myobj->district);
+$data['myClass'] = $this;
+$data['d_name'] = $d_name;
+$data['msg'] = $msg;
+
+$this->load->view("rtk/template", $data);
 }
+
+
 
     //VIew FCDRR Report
 public function lab_order_details($order_id, $msg = NULL) {
@@ -568,9 +613,13 @@ public function get_lab_report($order_no, $report_type) {
                     if ($month == '') {
                         $month = date('mY', strtotime('-1 month'));
                     }
+
+                    
+                    $month_db = date("mY", strtotime("$month +0 month"));
+                   // echo "$month_db";die();
                     $sql ="select rtk_district_percentage.percentage,districts.district from rtk_district_percentage,districts,counties
                     where rtk_district_percentage.district_id = districts.id and districts.county = counties.id and counties.id = '$countyid' 
-                    and rtk_district_percentage.month = '$month'";
+                    and rtk_district_percentage.month = '$month_db'";
                     $year = substr($month, -4);
                     $month = substr_replace($month, "", -4);
                     $reporting_rates = $this->db->query($sql)->result_array();
@@ -708,6 +757,22 @@ public function get_lab_report($order_no, $report_type) {
                     $this->logData('20', $object_id);
             //$this->_update_facility_count('add',$county,$district);        
                     redirect('rtk_management/county_admin/facilities');
+                }
+                public function update_facility_county() {
+                    $facilityname = $_POST['facilityname'];
+                    $district = $_POST['district'];
+                    $mfl = $_POST['facility_code'];
+                    $time = date('Y-m-d', time());
+                    $facilityname = addslashes($facilityname);
+
+                    $sql = "UPDATE `facilities` SET `facility_name` = '$facilityname',  `district` = '$district' WHERE `facility_code`='$mfl' ";
+                    $this->db->query($sql);
+                    $q = $this->db->query("select id from `facilities`WHERE `facility_code`='$mfl' ");
+                    $facil = $q->result_array();
+                    $object_id = $facil[0]['id'];
+                    $this->logData('21', $object_id);
+
+                    redirect('rtk_management/facility_profile/' . $mfl);
                 }
                 public function county_trend($month=null) { 
                     if(isset($month)){           
@@ -3425,12 +3490,15 @@ if (isset($county)) {
     $common_q.= ' AND counties.id =' . $county;
 }
 
-$common_q.= ' group by lab_commodities.id';
+ $common_q.= ' group by lab_commodities.id';
 
 $res = $this->db->query($common_q);        
 
-        // $result = $res->result_array();
-        // array_push($returnable, $result[0]);
+        $result = $res->result_array();
+        // echo "<pre>";
+        // print_r($result);
+        // die();
+        //array_push($returnable, $result);
 
 
         // $q = $common_q . " AND lab_commodities.id = 1";
@@ -3441,12 +3509,7 @@ $res = $this->db->query($common_q);
         // $q2 = $common_q . " AND lab_commodities.id = 2";
         // $res2 = $this->db->query($q2);
         // $result2 = $res2->result_array();
-        // array_push($returnable, $result2[0]);
-
-        // $q3 = $common_q . " AND lab_commodities.id = 3";
-        // $res3 = $this->db->query($q3);
-        // $result3 = $res3->result_array();
-        // array_push($returnable, $result3[0]);
+        // array_push($returnable, $result2[0]);        
 
         // $q4 = $common_q . " AND lab_commodities.id = 4";
         // $res4 = $this->db->query($q4);
@@ -3462,8 +3525,9 @@ $res = $this->db->query($common_q);
         // $res6 = $this->db->query($q6);
         // $result6 = $res6->result_array();
         // array_push($returnable, $result6[0]);
-$returnable = $res->result_array();
-return $returnable;
+// $returnable = $res->result_array();
+// echo"<pre>";print_r($returnable);die;
+return $result;
 }
 
 function county_reporting_percentages($county, $year, $month) {
@@ -4559,7 +4623,7 @@ public function get_all_zone_a_facilities(){
 
                 // $firstday = '2014-06-01';
                 // $lastday = '2014-09-30';        
-      // ini_set('memory_limit', '750M');
+                // ini_set('memory_limit', '750M');
                 $sql = "select distinct
                             facilities.facility_code,
                             lab_commodity_orders.order_date,
@@ -4653,6 +4717,49 @@ public function get_all_zone_a_facilities(){
                 $data['orderdate'] = $dates;
                 $this->load->view('rtk/template', $data);   
                 }
+
+    public function new_non_reported_facilities(){
+
+        $sql = "SELECT facilities.facility_code,facilities.facility_name,extract(YEAR_MONTH from lab_commodity_orders.order_date) as order_date
+                FROM lab_commodity_orders,facilities 
+                WHERE facilities.rtk_enabled =1 and facilities.zone = 'Zone B' 
+                and facilities.facility_code = lab_commodity_orders.facility_code and lab_commodity_orders.order_date between '2014-06-01' and '2014-09-30' 
+                group by facilities.facility_code, extract(YEAR_MONTH from lab_commodity_orders.order_date) ORDER BY `facilities`.`facility_code`";
+
+        $result = $this->db->query($sql)->result_array();       
+
+        $orderdates = array();
+
+        foreach($result as $elem) {
+            if (isset($elem['order_date'])) {
+                $orderdates[$elem['order_date']]++;
+            } else {
+                $orderdates[$elem['order_date']] = 0;
+            }
+            
+            foreach ($orderdates as $key => $value) {
+                $month = $value['order_date'];
+             
+
+            } 
+
+        }
+        echo "<pre>"; print_r($orderdates); die;
+
+
+    }
+    function all_facilities(){
+        $sql ="select distinct facilities.facility_code,counties.county, districts.district, facilities.facility_name from facilities, counties, districts
+                where facilities.district = districts.id and districts.county = counties.id and facilities.rtk_enabled=1 order by counties.county";
+        $result = $this->db->query($sql)->result_array();
+       
+        $data['title'] = 'Unreported Facilities ';
+        $data['banner_text'] = 'Facilities not Reported between June and September';
+        $data['content_view'] = 'rtk/allocation_committee/zone_b';        
+        $data['result'] = $result;
+        $this->load->view('rtk/template', $data); 
+    }
+
 }
 
 ?>

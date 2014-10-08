@@ -1,7 +1,3 @@
-
-
-
-
 <style>
 
 .dataTables_filter{
@@ -46,35 +42,25 @@ table{
   <table id="pending_facilities" class="data-table"> 
     <thead>
     <tr>        
-      <th>County</th>
-      <th>Sub-County</th>
-      <th>MFL</th>
-      <th>Facility Name</th>      
-      <th>Comodity</th>      
-      <th>Quantity Requested</th>      
-      <th>AMC</th>      
-          
-    </tr>        
-      
+      <th align="">County</th>
+      <th align="">Sub-County</th>
+      <th align="">MFL</th>
+      <th align="">Facility Name</th>          
+    </tr>  
+    
     </thead>
-
     <tbody>
       <?php
-      if(count($facilities)>0){
-       foreach ($facilities as $value) {
+      if(count($result)>0){
+       foreach ($result as $value) {
         //$zone = str_replace(' ', '-',$value['zone']);
         $facil = $value['facility_code'];
         ?> 
         <tr>   
-          <td><?php echo $value['county'];?></td>
-          <td><?php echo $value['district'];?></td>              
-          <td><?php echo $value['facility_code'];?></td>
-          <td><?php echo $value['facility_name'];?></td>     
-          <td><?php echo $value['commodity_name'];?></td>     
-          <td><?php echo $value['q_requested'];?></td>     
-          <td><?php echo $value['amc'];?></td>     
-          
-          
+          <td align=""><?php echo $value['county'];?></td>
+          <td align=""><?php echo $value['district'];?></td>              
+          <td align=""><?php echo $value['facility_code'];?></td>
+          <td align=""><?php echo $value['facility_name'];?></td>
         </tr>
         <?php }
       }else{ ?>
@@ -88,28 +74,30 @@ table{
 <script>
 $(document).ready(function() {
  
-  var table = $('#pending_facilities').dataTable({
-    "sDom": "T lfrtip",
-    "sScrollY": "377px",
-    "sScrollX": "100%",
-    "bPaginate": false,
-    "oLanguage": {
-      "sLengthMenu": "_MENU_ Records per page",
-      "sInfo": "Showing _START_ to _END_ of _TOTAL_ records",
-    },
-    "oTableTools": {
-      "aButtons": [      
-      "copy",
-      "print",
-      {
-        "sExtends": "collection",
-        "sButtonText": 'Save',
-        "aButtons": ["csv", "xls", "pdf"]
-      }
-      ],
-      "sSwfPath": "../../assets/datatable/media/swf/copy_csv_xls_pdf.swf"
-    }
-  });
+   $('#pending_facilities').dataTable({
+            "sDom": "T lfrtip",
+            "bPaginate": false,
+            "aaSorting": [[0, "asc"]],
+            "sScrollY": "377px",
+            "sScrollX": "100%",
+            "sPaginationType": "bootstrap",
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ Records per page",
+                "sInfo": "Showing _START_ to _END_ of _TOTAL_ records",
+            },
+            "oTableTools": {
+                "aButtons": [
+                "copy",
+                "print",
+                {
+                    "sExtends": "collection",
+                    "sButtonText": 'Save',
+                    "aButtons": ["csv", "xls", "pdf"]
+                }
+                ],
+                "sSwfPath": "<?php echo base_url(); ?>assets/datatable/media/swf/copy_csv_xls_pdf.swf"
+            }
+        });
 
   $("#pending_facilities tfoot th").each(function(i) {
     var select = $('<select><option value=""></option></select>')
@@ -145,4 +133,9 @@ $(document).ready(function() {
 <link href="../../assets/datatable/TableTools.css" type="text/css" rel="stylesheet"/>
 <link href="../../assets/datatable/dataTables.bootstrap.css" type="text/css" rel="stylesheet"/>
 
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/tablecloth/assets/css/tablecloth.css">
 
+
+<script src="http://tableclothjs.com/assets/js/jquery.tablesorter.js"></script>
+<script src="http://tableclothjs.com/assets/js/jquery.metadata.js"></script>
+<script src="http://tableclothjs.com/assets/js/jquery.tablecloth.js"></script>

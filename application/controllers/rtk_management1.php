@@ -3214,7 +3214,7 @@ function generate_lastpdf($id) {
                 foreach ($facilities as $key => $value) {
                     $fcode = $value['facility_code'];
                     $q = "select lab_commodities.*, facility_amc.* from lab_commodities, facility_amc 
-                    where lab_commodities.id = facility_amc.commodity_id and facility_amc.facility_code=$fcode";
+                    where lab_commodities.id = facility_amc.commodity_id and facility_amc.facility_code=$fcode an";
                     $res1 = $this->db->query($q);
                     $amc_details = $res1->result_array();
                     $amcs[$fcode] = $amc_details;

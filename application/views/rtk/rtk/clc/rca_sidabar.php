@@ -18,6 +18,7 @@
             $month_text = "-- ".$month_text." ".$year." --";
          ?>
         <option value="<?php echo $month_value ?>"><?php echo $month_text ?></option>;
+        
     <?php } ?>
     </select>
 
