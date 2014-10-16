@@ -1,8 +1,8 @@
-<link rel="stylesheet" type="text/css" href="http://tableclothjs.com/assets/css/tablecloth.css">
-<script src="http://tableclothjs.com/assets/js/jquery.tablesorter.js"></script>
-<script src="http://tableclothjs.com/assets/js/jquery.metadata.js"></script>
-<script src="http://tableclothjs.com/assets/js/jquery.tablecloth.js"></script>
 
+<script type="text/javascript" language="javascript" src="<?php echo base_url(); ?>assets/tablecloth/assets/js/jquery.tablesorter.js"></script>
+<script type="text/javascript" language="javascript" src="<?php echo base_url(); ?>assets/tablecloth/assets/js/jquery.metadata.js"></script>
+<script type="text/javascript" language="javascript" src="<?php echo base_url(); ?>assets/tablecloth/assets/js/jquery.tablecloth.js"></script>
+<script type="text/javascript" language="javascript" src="<?php echo base_url();?>assets/datatable/jquery.dataTables.js"></script>
 
 
 <style>
@@ -43,91 +43,67 @@ table{
 
 </style>
 <div style="width:100%;font-size: 12px;height:20px;padding: 10px 10px 10px 10px;margin-bottom:10px;">
-  <ul class="navtbl top-navigation nav" style="margin-top:0px;float:left;">        
-    <li class=""><a href="#">Zone-A</a></li>
-    <li class=""><a href="#">Zone-B</a></li>
-    <li class=""><a href="#">Zone-C</a></li>
-    <li class=""><a href="#">Zone-D</a></li>
-
+  <ul class="nav top-navigation nav" style="margin-top:0px;float:left;">   
+    <li class=""><a href="<?php echo base_url() .'rtk_management/new_non_reported_facilities/A';?>">Zone A</a></li>
+    <li class=""><a href="<?php echo base_url() .'rtk_management/new_non_reported_facilities/B';?>">Zone B</a></li>
+    <li class=""><a href="<?php echo base_url() .'rtk_management/new_non_reported_facilities/C';?>">Zone C</a></li>
+    <li class=""><a href="<?php echo base_url() .'rtk_management/new_non_reported_facilities/D';?>">Zone D</a></li>
   </ul>
 </div>
 
 <div class="main-container" style="width: 100%;float: right;">
 
-  <table id="pending_facilities" class="data-table" width="80%"> 
+  <table id="pending_facilities" class="data-table"> 
   
     <thead>
     <tr>        
       <th>County</th>
       <th>Sub-County</th>
       <th>MFL</th>
-      <th>Facility Name</th>  
+      <th>Facility Name</th>          
       <th>Zone</th>          
-      <th>June</th>          
-      <th>July</th>          
-      <th>August</th>          
-      <th>September</th>          
-    </tr>    
-    
+      <th><?php echo $month_texts[0];?></th>    
+      <th><?php echo $month_texts[1];?></th>    
+      <th><?php echo $month_texts[2];?></th>    
+      <th><?php echo $month_texts[3];?></th>    
+    </tr> 
       
     </thead>
 
     <tbody>
       <?php
-         // echo "<pre>";
-         //            print_r($orderdate);
-         //            die;
-      if(count($orderdate)>0){
-       foreach ($orderdate as $key =>$value) {
-        //$zone = str_replace(' ', '-',$value['zone']);
-        $facil = $value['fcode'];
-        $name = $value['name'];
-        $date1 = $value['dates'][0];        
-        $date2 = $value['dates'][1];
-        $date3 = $value['dates'][2];
-        $date4 = $value['dates'][3];
+      if(count($facilities)>0){
+       foreach ($facilities as $value) {        
+        $facil = $value['facility_code'];
+        $m1 =$months[0];
+        $m2 =$months[1];
+        $m3 =$months[2];
+        $m4 =$months[3];
         ?> 
-        <tr>   
+        <tr> 
           <td><?php echo $value['county'];?></td>
-          <td><?php echo $value['subcounty'];?></td>              
+          <td><?php echo $value['district'];?></td>
           <td><?php echo $facil;?></td>
-          <td><?php echo $name;?></td>   
-          <td><?php echo $value['zone'];?></td>              
-          <td><?php 
-            if($date1 >= '2014-06-01' && $date1 <= '2014-06-31'){
-                echo "Y";
-              }else
-              {
-                echo "N";
-              }
-            ?></td> 
-          <td><?php 
-            if($date2 >= '2014-07-01' && $date2 <= '2014-07-31'){
-                echo "Y";
-              }else
-              {
-                echo "N";
-              }
-            ?></td> <td><?php 
-            if($date3 >= '2014-08-01' && $date3 <= '2014-08-31'){
-                echo "Y";
-              }else
-              {
-                echo "N";
-              }
-            ?></td> <td><?php 
-            if($date4 >= '2014-09-01' && $date4 <= '2014-09-31'){
-                echo "Y";
-              }else
-              {
-                echo "N";
-              }
-            ?></td> 
-          
+          <td><?php echo $value['facility_name'];?></td>          
+          <td><?php echo $value['zone'];?></td>
+          <td><?php echo $final_array[$m1][0][$facil][0];?></td>
+          <td><?php echo $final_array[$m2][0][$facil][0];?></td>
+          <td><?php echo $final_array[$m3][0][$facil][0];?></td>
+          <td><?php echo $final_array[$m4][0][$facil][0];?></td>
         </tr>
         <?php }
       }else{ ?>
-      <tr>There are No Facilities which did not Report</tr>
+      <tr>There are No Facilities which did not Report</tr><tr> 
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+        </tr>
       <?php }
       ?>      
 
@@ -156,7 +132,7 @@ $(document).ready(function() {
         "aButtons": ["csv", "xls", "pdf"]
       }
       ],
-      "sSwfPath": "../assets/datatable/media/swf/copy_csv_xls_pdf.swf"
+      "sSwfPath": "<?php echo base_url();?>assets/datatable/media/swf/copy_csv_xls_pdf.swf"
     }
   });
 
@@ -189,18 +165,18 @@ $(document).ready(function() {
 
 <!--Datatables==========================  --> 
 <script src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js" type="text/javascript"></script>
-<script src="../assets/datatable/jquery.dataTables.min.js" type="text/javascript"></script>  
-<script src="../assets/datatable/dataTables.bootstrap.js" type="text/javascript"></script>
-<script src="../assets/datatable/TableTools.js" type="text/javascript"></script>
-<script src="../assets/datatable/ZeroClipboard.js" type="text/javascript"></script>
-<script src="../assets/datatable/dataTables.bootstrapPagination.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>assets/datatable/jquery.dataTables.min.js" type="text/javascript"></script>  
+<script src="<?php echo base_url();?>assets/datatable/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>assets/datatable/TableTools.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>assets/datatable/ZeroClipboard.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>assets/datatable/dataTables.bootstrapPagination.js" type="text/javascript"></script>
 <!-- validation ===================== -->
-<script src="../assets/scripts/jquery.validate.min.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>assets/scripts/jquery.validate.min.js" type="text/javascript"></script>
 
 
 
-<link href="../assets/boot-strap3/css/bootstrap-responsive.css" type="text/css" rel="stylesheet"/>
-<link href="../assets/datatable/TableTools.css" type="text/css" rel="stylesheet"/>
-<link href="../assets/datatable/dataTables.bootstrap.css" type="text/css" rel="stylesheet"/>
+<link href="<?php echo base_url();?>assets/boot-strap3/css/bootstrap-responsive.css" type="text/css" rel="stylesheet"/>
+<link href="<?php echo base_url();?>assets/datatable/TableTools.css" type="text/css" rel="stylesheet"/>
+<link href="<?php echo base_url();?>assets/datatable/dataTables.bootstrap.css" type="text/css" rel="stylesheet"/>
 
 
